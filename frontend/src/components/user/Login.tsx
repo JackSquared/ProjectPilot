@@ -65,7 +65,7 @@ const Login: React.FC<LoginProps> = ({ onAuth }) => {
 
   const onSubmit = (values, { setSubmitting }) => {
     console.log(values);
-    onAuth(values.email, values.password); // Call the onAuth function with the form values
+    onAuth(values.email, values.password);
     setSubmitting(false);
   };
 

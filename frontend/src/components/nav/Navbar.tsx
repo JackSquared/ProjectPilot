@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import { AuthContext } from '../../AuthContext';
 
 const NavbarWrapper = styled.nav`
   width: 100%;
@@ -17,6 +18,11 @@ const NavbarWrapper = styled.nav`
 const StyledLink = styled(Link)`
   color: #fff;
   text-decoration: none;
+  margin-right: 10px;
+
+  &:last-child {
+    margin-right: 0;
+  }
 
   &:hover {
     color: #ddd;
@@ -24,13 +30,26 @@ const StyledLink = styled(Link)`
 `;
 
 const Navbar = () => {
+  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+
+  const onLogout = () => {
+    setIsAuthenticated(false);
+  };
+
   return (
     <NavbarWrapper>
       <StyledLink to='/'>Home</StyledLink>
       <div>
-        {' '}
-        {/* Some div */}
-        <StyledLink to='/logout'>Logout</StyledLink>
+        {isAuthenticated ? (
+          <StyledLink to='/' onClick={onLogout}>
+            Logout
+          </StyledLink>
+        ) : (
+          <>
+            <StyledLink to='/login'>Login</StyledLink>
+            <StyledLink to='/signup'>Sign Up</StyledLink>
+          </>
+        )}
       </div>
     </NavbarWrapper>
   );
