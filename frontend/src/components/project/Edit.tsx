@@ -1,6 +1,7 @@
-import React from 'react';
-import { Formik, Field, Form, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
+import React from "react";
+import { Formik, Field, Form, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { TextField, Button } from "@mui/material";
 
 const Edit = ({ project }) => {
   const initialValues = {
@@ -9,8 +10,8 @@ const Edit = ({ project }) => {
   };
 
   const validationSchema = Yup.object().shape({
-    name: Yup.string().required('Project name is required'),
-    description: Yup.string().required('Project description is required'),
+    name: Yup.string().required("Project name is required"),
+    description: Yup.string().required("Project description is required"),
   });
 
   const onSubmit = (values, { setSubmitting }) => {
@@ -24,17 +25,27 @@ const Edit = ({ project }) => {
       validationSchema={validationSchema}
       onSubmit={onSubmit}
     >
-      <Form>
-        <label htmlFor='name'>Project Name</label>
-        <Field name='name' type='text' />
-        <ErrorMessage name='name' component='div' />
-
-        <label htmlFor='description'>Project Description</label>
-        <Field name='description' type='text' />
-        <ErrorMessage name='description' component='div' />
-
-        <button type='submit'>Update Project</button>
-      </Form>
+      {({ errors, touched }) => (
+        <Form>
+          <TextField
+            name="name"
+            label="Project Name"
+            error={touched.name && Boolean(errors.name)}
+            helperText={touched.name && errors.name ? String(errors.name) : ""}
+          />
+          <TextField
+            name="description"
+            label="Project Description"
+            error={touched.description && Boolean(errors.description)}
+            helperText={
+              touched.description && errors.description
+                ? String(errors.description)
+                : ""
+            }
+          />
+          <Button type="submit">Update Project</Button>
+        </Form>
+      )}
     </Formik>
   );
 };

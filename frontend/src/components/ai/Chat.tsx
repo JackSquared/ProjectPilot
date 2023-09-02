@@ -1,4 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+} from "@mui/material";
+import { AuthContext } from "../../AuthContext";
 
 interface MessageProps {
   sender: string;
@@ -7,30 +15,32 @@ interface MessageProps {
 
 const Message: React.FC<MessageProps> = ({ sender, content }) => {
   return (
-    <div>
-      <h4>{sender}</h4>
-      <p>{content}</p>
-    </div>
+    <Card sx={{ my: 1 }}>
+      <CardContent>
+        <Typography variant="h6">{sender}</Typography>
+        <Typography variant="body1">{content}</Typography>
+      </CardContent>
+    </Card>
   );
 };
 
 const Chat: React.FC = () => {
   const [messages, setMessages] = useState<MessageProps[]>([]);
-  const [input, setInput] = useState<string>('');
+  const [input, setInput] = useState<string>("");
 
   const handleSend = () => {
-    if (input.trim() === '') return;
-    setMessages([...messages, { sender: 'User', content: input }]);
-    setInput('');
+    if (input.trim() === "") return;
+    setMessages([...messages, { sender: "User", content: input }]);
+    setInput("");
   };
 
   // simulate AI response
   useEffect(() => {
-    if (messages.length && messages[messages.length - 1].sender === 'User') {
+    if (messages.length && messages[messages.length - 1].sender === "User") {
       setTimeout(() => {
         setMessages([
           ...messages,
-          { sender: 'AI', content: 'This is a simulated AI response.' },
+          { sender: "AI", content: "This is a simulated AI response." },
         ]);
       }, 1000);
     }
@@ -47,13 +57,16 @@ const Chat: React.FC = () => {
           />
         ))}
       </div>
-      <input
-        type='text'
+      <TextField
+        variant="outlined"
+        fullWidth
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        onKeyPress={(event) => (event.key === 'Enter' ? handleSend() : null)}
+        onKeyPress={(event) => (event.key === "Enter" ? handleSend() : null)}
       />
-      <button onClick={handleSend}>Send</button>
+      <Button variant="contained" onClick={handleSend}>
+        Send
+      </Button>
     </div>
   );
 };

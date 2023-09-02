@@ -1,33 +1,7 @@
-import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { AuthContext } from '../../AuthContext';
-
-const NavbarWrapper = styled.nav`
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-  height: 60px;
-  background-color: #333;
-  color: #fff;
-  box-sizing: border-box;
-`;
-
-const StyledLink = styled(Link)`
-  color: #fff;
-  text-decoration: none;
-  margin-right: 10px;
-
-  &:last-child {
-    margin-right: 0;
-  }
-
-  &:hover {
-    color: #ddd;
-  }
-`;
+import React, { useContext } from "react";
+import { Link as RouterLink } from "react-router-dom";
+import { AppBar, Toolbar, Typography, Button } from "@mui/material";
+import { AuthContext } from "../../AuthContext";
 
 const Navbar = () => {
   const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
@@ -37,21 +11,29 @@ const Navbar = () => {
   };
 
   return (
-    <NavbarWrapper>
-      <StyledLink to='/'>Home</StyledLink>
-      <div>
+    <AppBar position="static">
+      <Toolbar>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Button color="inherit" component={RouterLink} to="/">
+            Home
+          </Button>
+        </Typography>
         {isAuthenticated ? (
-          <StyledLink to='/' onClick={onLogout}>
+          <Button color="inherit" onClick={onLogout}>
             Logout
-          </StyledLink>
+          </Button>
         ) : (
           <>
-            <StyledLink to='/login'>Login</StyledLink>
-            <StyledLink to='/signup'>Sign Up</StyledLink>
+            <Button color="inherit" component={RouterLink} to="/login">
+              Login
+            </Button>
+            <Button color="inherit" component={RouterLink} to="/signup">
+              Sign Up
+            </Button>
           </>
         )}
-      </div>
-    </NavbarWrapper>
+      </Toolbar>
+    </AppBar>
   );
 };
 

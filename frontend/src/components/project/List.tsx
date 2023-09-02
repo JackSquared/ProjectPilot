@@ -1,20 +1,29 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link as RouterLink } from "react-router-dom";
+import { List as MUIList, ListItem, ListItemText, Button } from "@mui/material";
 
-const List = ({ projects }) => {
+const ProjectList = ({ projects }) => {
   return (
     <div>
       <h1>Your Projects</h1>
-      <ul>
+      <MUIList>
         {projects.map((project) => (
-          <li key={project.id}>
-            <Link to={`/projects/${project.id}`}>{project.name}</Link>
-          </li>
+          <ListItem key={project.id}>
+            <ListItemText
+              primary={
+                <RouterLink to={`/projects/${project.id}`}>
+                  {project.name}
+                </RouterLink>
+              }
+            />
+          </ListItem>
         ))}
-      </ul>
-      <Link to='/projects/new'>Create a New Project</Link>
+      </MUIList>
+      <Button component={RouterLink} to="/projects/new">
+        Create a New Project
+      </Button>
     </div>
   );
 };
 
-export default List;
+export default ProjectList;

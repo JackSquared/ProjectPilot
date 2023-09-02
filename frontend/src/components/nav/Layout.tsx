@@ -1,20 +1,7 @@
-import React from 'react';
-import Navbar from './Navbar';
-import Footer from './Footer';
-import styled from 'styled-components';
-
-const AppWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-`;
-
-const MainWrapper = styled.main`
-  flex-grow: 1;
-  padding: 20px;
-  background-color: #f2f2f2;
-  overflow: auto;
-`;
+import React from "react";
+import Navbar from "./Navbar";
+import Footer from "./Footer";
+import { Box } from "@mui/material";
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -22,11 +9,27 @@ type LayoutProps = {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <AppWrapper>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+      }}
+    >
       <Navbar />
-      <MainWrapper>{children}</MainWrapper>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 2, // shorthand for padding: theme.spacing(2)
+          backgroundColor: "#f2f2f2",
+          overflow: "auto",
+        }}
+      >
+        {children}
+      </Box>
       <Footer />
-    </AppWrapper>
+    </Box>
   );
 };
 

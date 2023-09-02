@@ -1,4 +1,12 @@
-import React from 'react';
+import React from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
 
 const DeleteProject = ({ project, onDelete, onClose }) => {
   const handleDelete = () => {
@@ -6,11 +14,22 @@ const DeleteProject = ({ project, onDelete, onClose }) => {
   };
 
   return (
-    <div>
-      <p>Are you sure you want to delete {project.name}?</p>
-      <button onClick={handleDelete}>Yes, delete</button>
-      <button onClick={onClose}>No, cancel</button>
-    </div>
+    <Dialog open={true} onClose={onClose}>
+      <DialogTitle>Confirm Delete</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Are you sure you want to delete {project.name}?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleDelete} color="primary">
+          Yes, delete
+        </Button>
+        <Button onClick={onClose} color="primary" autoFocus>
+          No, cancel
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

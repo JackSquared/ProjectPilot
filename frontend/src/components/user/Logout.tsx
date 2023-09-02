@@ -1,7 +1,8 @@
-import React from 'react';
+import React from "react";
+import { Button } from "@mui/material";
 
 const Logout = ({ onLogout }) => {
-  return <button onClick={onLogout}>Logout</button>;
+  return <Button onClick={onLogout}>Logout</Button>;
 };
 
 export default Logout;

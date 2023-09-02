@@ -1,39 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import MuiAlert, { AlertProps as MuiAlertProps } from '@mui/material/Alert';
 
-interface AlertProps {
+interface AlertProps extends MuiAlertProps {
   message: string;
-  type: 'success' | 'error' | 'warning';
+  autoHideDuration?: number;
 }
 
-const Alert: React.FC<AlertProps> = ({ message, type }) => {
+const Alert: React.FC<AlertProps> = ({ message, autoHideDuration = 3000, ...props }) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 3000); // 3 seconds
+    }, autoHideDuration); // 3 seconds
 
     return () => clearTimeout(timer); // clean up on unmount
-  }, []);
+  }, [autoHideDuration]);
 
   if (!isVisible) {
     return null;
   }
 
-  const getStyle = () => {
-    switch (type) {
-      case 'success':
-        return { color: 'green' };
-      case 'error':
-        return { color: 'red' };
-      case 'warning':
-        return { color: 'orange' };
-      default:
-        return {};
-    }
-  };
-
-  return <div style={getStyle()}>{message}</div>;
+  return <MuiAlert {...props}>{message}</MuiAlert>;
 };
 
 export default Alert;
