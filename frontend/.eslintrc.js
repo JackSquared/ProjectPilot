@@ -13,7 +13,7 @@ module.exports = {
     "parserOptions": {
       "ecmaVersion": "latest",
       "sourceType": "module",
-      "project": "./tsconfig.json"
+      "project": "frontend/tsconfig.json"
     },
     "plugins": [
       "react",
@@ -27,5 +27,6 @@ module.exports = {
       "react": {
         "version": "detect"
       }
-    }
+    },
+    ignorePatterns: [".eslintrc.js"],
   }
