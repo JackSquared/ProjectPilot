@@ -1,10 +1,6 @@
 import React, { useState } from "react";
-import { useRoutes, Navigate } from "react-router-dom";
+import { useRoutes } from "react-router-dom";
 import Layout from "./components/nav/Layout";
-import Login from "./components/user/Login";
-import Dashboard from "./components/Dashboard";
-import View from "./components/project/View";
-import SignUp from "./components/user/Register";
 import { AuthContext } from "./AuthContext";
 import { onAuth, onSignUp } from "./services/auth";
 import routes from "./routes/routes";
