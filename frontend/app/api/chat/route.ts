@@ -1,141 +1,185 @@
-import { StreamingTextResponse, LangChainStream, Message } from 'ai';
-import { ChatOpenAI } from 'langchain/chat_models/openai';
-import { APIChain } from 'langchain/chains'
-import { AIMessage, HumanMessage } from 'langchain/schema';
+import { StreamingTextResponse, OpenAIStream, Message } from 'ai';
+import { OpenAI } from 'openai'
+import type { ChatCompletionCreateParams } from 'openai/resources/chat';
 
 export const runtime = 'edge';
 
-const docs = `
-openapi: 3.0.0
-info:
-  title: Kanban
-  description: |-
-    # 🚀 ProjectPilot - Kanban
+const KANBAN_URL = "https://kanban.jackdewinter.repl.co"
 
-    Interact with a Kanban project with AI.
-  version: 1.0.0
-servers:
-  - url: https://kanban.jackdewinter.repl.co
-paths:
-  /board/{board_name}:
-    get:
-      tags:
-        - default
-      summary: Get board
-      description: Get a board.
-      parameters:
-        - name: board_name
-          in: path
-          schema:
-            type: string
-          required: true
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json: {}
-  /board:
-    post:
-      tags:
-        - default
-      summary: Create board
-      description: Create a new board.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              example: ''
-      parameters:
-        - name: name
-          in: query
-          schema:
-            type: string
-          example: '{{board_name}}'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json: {}
-  /board/{board_name}/column:
-    put:
-      tags:
-        - default
-      summary: Add Column
-      description: Add a new column with tasks.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              example:
-                name: '{{column_name}}'
-                tasks: []
-      parameters:
-        - name: board_name
-          in: path
-          schema:
-            type: string
-          required: true
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json: {}
-  /board/{board_name}/task:
-    put:
-      tags:
-        - default
-      summary: Add Task
-      description: Add a new task to a column.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              example:
-                title: '{{task_title}}'
-                description: '{{description}}'
-      parameters:
-        - name: column_name
-          in: query
-          schema:
-            type: string
-          example: '{{column_name}}'
-        - name: board_name
-          in: path
-          schema:
-            type: string
-          required: true
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json: {}
-`
+async function getBoard(board_name: string) {
+  try {
+    const response = await fetch(`${KANBAN_URL}/board/${board_name}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function createBoard(name: string) {
+  try {
+    const response = await fetch(`${KANBAN_URL}/board`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name })
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
+});
+ 
+const functions: ChatCompletionCreateParams.Function[] = [
+  {
+    name: 'get_board',
+    description: 'Get a board',
+    parameters: {
+      type: 'object',
+      properties: {
+        board_name: {
+          type: 'string',
+          description: 'The name of the board',
+        },
+      },
+      required: ['board_name'],
+    },
+  },
+  {
+    name: 'create_board',
+    description: 'Create a new board',
+    parameters: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'The name of the new board',
+        },
+      },
+      required: ['name'],
+    },
+  },
+  {
+    name: 'add_column',
+    description: 'Add a new column with tasks',
+    parameters: {
+      type: 'object',
+      properties: {
+        board_name: {
+          type: 'string',
+          description: 'The name of the board',
+        },
+        column_name: {
+          type: 'string',
+          description: 'The name of the new column',
+        },
+        tasks: {
+          type: 'array',
+          description: 'The tasks for the new column',
+          items: {
+            type: 'object',
+            properties: {
+              board_name: {
+                type: 'string',
+                description: 'The name of the board',
+              },
+              column_name: {
+                type: 'string',
+                description: 'The name of the column',
+              },
+              task_title: {
+                type: 'string',
+                description: 'The title of the new task',
+              },
+              description: {
+                type: 'string',
+                description: 'The description of the new task',
+              },
+            },
+            required: ['board_name', 'column_name', 'task_title', 'description'],
+          }
+        },
+      },
+      required: ['board_name', 'column_name'],
+    },
+  },
+  {
+    name: 'add_task',
+    description: 'Add a new task to a column',
+    parameters: {
+      type: 'object',
+      properties: {
+        board_name: {
+          type: 'string',
+          description: 'The name of the board',
+        },
+        column_name: {
+          type: 'string',
+          description: 'The name of the column',
+        },
+        task_title: {
+          type: 'string',
+          description: 'The title of the new task',
+        },
+        description: {
+          type: 'string',
+          description: 'The description of the new task',
+        },
+      },
+      required: ['board_name', 'column_name', 'task_title', 'description'],
+    },
+  },
+];
+
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-  const { stream, handlers } = LangChainStream();
-
-  const llm = new ChatOpenAI({
-    streaming: true,
+  const response = await openai.chat.completions.create({
+    model: 'gpt-3.5-turbo-0613',
+    stream: true,
+    messages,
+    functions,
   });
 
-  const chain = APIChain.fromLLMAndAPIDocs(llm, docs)
+  const stream = OpenAIStream(response, {
+    experimental_onFunctionCall: async (
+      { name, arguments: args },
+      createFunctionCallMessages,
+    ) => {
+      if (name === 'get_board') {
+        const boardData = await getBoard(args.board_name as string);
+        const newMessages = createFunctionCallMessages(boardData);
+        return openai.chat.completions.create({
+          messages: [...messages, ...newMessages],
+          stream: true,
+          model: 'gpt-3.5-turbo-0613',
+          functions,
+        });
+      } else if (name === 'create_board') {
+        const boardData = await createBoard(args.name as string);
+        const newMessages = createFunctionCallMessages(boardData);
+        return openai.chat.completions.create({
+          messages: [...messages, ...newMessages],
+          stream: true,
+          model: 'gpt-3.5-turbo-0613',
+          functions,
+        });
+      }
+    },
+  });
 
-  llm
-    .call(
-      (messages as Message[]).map(m =>
-        m.role == 'user'
-          ? new HumanMessage(m.content)
-          : new AIMessage(m.content),
-      ),
-      {},
-      [handlers],
-    )
-    .catch(console.error);
 
   return new StreamingTextResponse(stream);
 }
