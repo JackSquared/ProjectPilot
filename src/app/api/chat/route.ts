@@ -1,41 +1,12 @@
 import { StreamingTextResponse, OpenAIStream, Message } from 'ai';
 import { OpenAI } from 'openai'
 import type { ChatCompletionCreateParams } from 'openai/resources/chat';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 export const runtime = 'edge';
 
 const KANBAN_URL = "https://kanban.jackdewinter.repl.co"
-
-async function getBoard(board_name: string) {
-  try {
-    const response = await fetch(`${KANBAN_URL}/board/${board_name}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function createBoard(name: string) {
-  try {
-    const response = await fetch(`${KANBAN_URL}/board`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ name })
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-  }
-}
-
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -48,12 +19,12 @@ const functions: ChatCompletionCreateParams.Function[] = [
     parameters: {
       type: 'object',
       properties: {
-        board_name: {
+        name: {
           type: 'string',
           description: 'The name of the board',
         },
       },
-      required: ['board_name'],
+      required: ['name'],
     },
   },
   {
@@ -144,6 +115,47 @@ const functions: ChatCompletionCreateParams.Function[] = [
 
 
 export async function POST(req: Request) {
+
+  const supabase = createServerComponentClient({ cookies });
+
+  async function getBoard(name: string) {
+    try {
+      
+    let { data: kanban_boards, error } = await supabase
+      .from('kanban_boards')
+      .select('*')
+  
+      if (error) {
+        throw error;
+      }
+      return kanban_boards;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  
+  async function createBoard(name: string) {
+    try {
+      let { data: projects } = await supabase
+        .from('projects')
+        .select('*')
+
+      let { data: kanban_boards, error } = await supabase.from('kanban_boards')
+        .insert([
+          { name, project_id: projects ? projects[0].id : null}
+      ])
+      if (error) {
+        throw error;
+      }
+      
+      return kanban_boards
+      
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  
+
   const { messages } = await req.json();
 
   const response = await openai.chat.completions.create({
@@ -159,8 +171,8 @@ export async function POST(req: Request) {
       createFunctionCallMessages,
     ) => {
       if (name === 'get_board') {
-        const boardData = await getBoard(args.board_name as string);
-        const newMessages = createFunctionCallMessages(boardData);
+        const boardData = await getBoard(args.name as string);
+        const newMessages = createFunctionCallMessages(boardData ? boardData[0] : null);
         return openai.chat.completions.create({
           messages: [...messages, ...newMessages],
           stream: true,
@@ -169,7 +181,7 @@ export async function POST(req: Request) {
         });
       } else if (name === 'create_board') {
         const boardData = await createBoard(args.name as string);
-        const newMessages = createFunctionCallMessages(boardData);
+        const newMessages = createFunctionCallMessages(boardData ? boardData[0] : null);
         return openai.chat.completions.create({
           messages: [...messages, ...newMessages],
           stream: true,
