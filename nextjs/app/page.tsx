@@ -1,29 +1,26 @@
-'use client';
+import Chat from '@/components/Chat';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import Link from 'next/link';
 
-import { useChat } from 'ai/react';
+export default async function Home() {
+  const supabase = createServerComponentClient({ cookies });
 
-export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/sign-in');
+  }
 
   return (
-    <div className="mx-auto w-full max-w-md py-24 flex flex-col stretch">
-      {messages.length > 0
-        ? messages.map(m => (
-            <div key={m.id} className="whitespace-pre-wrap">
-              {m.role === 'user' ? 'User: ' : 'AI: '}
-              {m.content}
-            </div>
-          ))
-        : null}
-
-      <form onSubmit={handleSubmit}>
-        <input
-          className="fixed w-full max-w-md bottom-0 border border-gray-300 rounded mb-8 shadow-xl p-2"
-          value={input}
-          placeholder="Say something..."
-          onChange={handleInputChange}
-        />
-      </form>
-    </div>
+    <>
+      <Link className="button" href="/profile">
+        Go to Profile
+      </Link>
+      <Chat />
+    </>
   );
 }
