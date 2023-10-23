@@ -13,6 +13,17 @@ export default async function Home() {
 
   if (!user) {
     redirect('/sign-in');
+  } else {
+    let { data: projects } = await supabase
+      .from('projects')
+      .select('*')
+
+    if(projects && projects.length === 0) {
+      await supabase.from('projects')
+        .insert([
+          { name: 'Default', owner_id: user.id },
+        ])
+    }
   }
 
   return (
