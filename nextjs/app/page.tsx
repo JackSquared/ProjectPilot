@@ -17,7 +17,7 @@ export default async function Home() {
 
   return (
     <>
-      <Link className="button" href="/profile">
+      <Link className="button fixed right-0 mr-8" href="/profile">
         Go to Profile
       </Link>
       <Chat />

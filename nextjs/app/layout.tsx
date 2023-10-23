@@ -23,7 +23,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider accessToken={accessToken}>{children}</AuthProvider>
+        <div className="flex min-h-screen flex-col items-center py-2">
+          <AuthProvider accessToken={accessToken}>{children}</AuthProvider>
+        </div>
       </body>
     </html>
   );

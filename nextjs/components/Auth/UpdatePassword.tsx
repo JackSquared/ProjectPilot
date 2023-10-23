@@ -34,7 +34,6 @@ const UpdatePassword = () => {
     }
   }
 
-
   return (
     <div className="card">
       <h2 className="w-full text-center">Update Password</h2>
