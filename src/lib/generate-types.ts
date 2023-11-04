@@ -32,18 +32,29 @@ exec(command, (error: Error | null, stdout: string, stderr: string) => {
 
   // Read the content of the updated supabase.types.ts file
   const databaseTypesContent = readFileSync(databaseTypesPath, 'utf-8');
-  const tableRegex = /(\w+): {\s+Row: {([\s\S]*?)}\s+Insert:/g;
+  
+  // This regular expression is used to match and capture the table definitions
+  const tableRegex = /(\w+): {\s+Row: {([\s\S]*?)}\s+Insert: {([\s\S]*?)}\s+Update: {([\s\S]*?)}/g;
 
   let match;
   let typesToAppend = [];
-  
+
   while ((match = tableRegex.exec(databaseTypesContent)) !== null) {
     const tableNameSingular = toSingular(match[1]);
     const typeName = capitalizeFirstLetter(tableNameSingular);
-    const properties = match[2].trim().split('\n').map(prop => `  ${prop.trim()}`).join('\n');
-    typesToAppend.push(`export type ${typeName} = {\n${properties}\n};`);
+    
+    // Row type
+    const rowProperties = match[2].trim().split('\n').map(prop => `  ${prop.trim()}`).join('\n');
+    typesToAppend.push(`export type ${typeName} = {\n${rowProperties}\n};`);
+
+    // Insert type
+    const insertProperties = match[3].trim().split('\n').map(prop => `  ${prop.trim()}`).join('\n');
+    typesToAppend.push(`export type Insert${typeName} = {\n${insertProperties}\n};`);
+
+    // Update type
+    const updateProperties = match[4].trim().split('\n').map(prop => `  ${prop.trim()}`).join('\n');
+    typesToAppend.push(`export type Update${typeName} = {\n${updateProperties}\n};`);
   }
 
-  // Write the new content to types.ts
   writeFileSync(typesPath, typesToAppend.join('\n\n') + '\n');
 });
