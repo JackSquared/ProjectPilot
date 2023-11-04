@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    .card {
+        @apply column min-w-[20rem] items-center gap-8 rounded-2xl bg-white py-8 px-4 shadow-md sm:min-w-[24rem] sm:px-10;
+    }
+    .column {
+        @apply flex flex-col items-start justify-center gap-4;
+    }
+    .input {
+        @apply w-full rounded border border-slate-300 focus:shadow-none;
+    }
+
+}

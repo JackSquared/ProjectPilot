@@ -1,0 +1,44 @@
+import Chat from '@/components/Chat';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import Link from 'next/link';
+
+export default async function Home() {
+  const supabase = createServerComponentClient({ cookies });
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/sign-in');
+  } else {
+    let { data: projects } = await supabase
+      .from('projects')
+      .select('*')
+
+    if(projects && projects.length === 0) {
+      let { data: project } = await supabase.from('projects')
+        .insert([
+          { name: 'Default', owner_id: user.id },
+        ]).select()
+
+      if(project && project.length === 1) {
+        await supabase.from('kanban_boards')
+          .insert([
+            { name: 'Default', project_id: project[0].id}
+          ])
+      }
+    }
+  }
+
+  return (
+    <>
+      <Link className="button fixed right-0 mr-8" href="/profile">
+        Go to Profile
+      </Link>
+      <Chat />
+    </>
+  );
+}
