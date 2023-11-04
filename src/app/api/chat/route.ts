@@ -3,6 +3,7 @@ import { OpenAI } from 'openai'
 import type { ChatCompletionCreateParams } from 'openai/resources/chat';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { Project } from '@/lib/database.types';
 
 export const runtime = 'edge';
 
@@ -46,9 +47,9 @@ export async function POST(req: Request) {
 
       let { data, error } = await supabase
         .from('projects')
-        .insert([
+        .insert<Partial<Project>>([
           { name, description, user_id: user.id }
-      ]).select()
+        ]).select()
         
       if (error) {
         throw error;
