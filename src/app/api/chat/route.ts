@@ -47,7 +47,7 @@ export async function POST(req: Request) {
       let { data, error } = await supabase
         .from('projects')
         .insert([
-          { name, description, owner_id: user.id }
+          { name, description, user_id: user.id }
       ]).select()
         
       if (error) {
