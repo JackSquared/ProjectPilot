@@ -32,7 +32,8 @@ const functions: ChatCompletionCreateParams.Function[] = [
 ];
 
 export async function POST(req: Request) {
-  const supabase = createServerComponentClient({ cookies });
+  const cookieStore = cookies();
+  const supabase = createServerComponentClient({ cookies: () => cookieStore });
 
   async function createProject(name: string, description: string) {
     try {
