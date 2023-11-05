@@ -3,7 +3,7 @@ import { OpenAI } from 'openai'
 import type { ChatCompletionCreateParams } from 'openai/resources/chat';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { InsertProject } from '@/lib/database.types';
+import { Database } from '@/lib/supabase.types';
 
 export const runtime = 'edge';
 
@@ -34,7 +34,7 @@ const functions: ChatCompletionCreateParams.Function[] = [
 
 export async function POST(req: Request) {
   const cookieStore = cookies();
-  const supabase = createServerComponentClient({ cookies: () => cookieStore });
+  const supabase = createServerComponentClient<Database>({ cookies: () => cookieStore });
 
   async function createProject(name: string, description: string) {
     try {
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
       let { data, error } = await supabase
         .from('projects')
-        .insert<InsertProject>([
+        .insert([
           { name, description, user_id: user.id }
         ]).select()
         
