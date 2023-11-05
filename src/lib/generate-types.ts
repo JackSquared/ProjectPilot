@@ -34,6 +34,7 @@ exec(command, (error: Error | null, stdout: string, stderr: string) => {
   const databaseTypesContent = readFileSync(databaseTypesPath, 'utf-8');
   
   // This regular expression is used to match and capture the table definitions
+  // If this is suddenly broken it may be because supabase has changed how type generation works
   const tableRegex = /(\w+): {\s+Row: {([\s\S]*?)}\s+Insert: {([\s\S]*?)}\s+Update: {([\s\S]*?)}/g;
 
   let match;
