@@ -1,9 +1,9 @@
-import { StreamingTextResponse, OpenAIStream } from 'ai';
-import { OpenAI } from 'openai'
-import type { ChatCompletionCreateParams } from 'openai/resources/chat';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { Database } from '@/lib/supabase.types';
+import {StreamingTextResponse, OpenAIStream} from 'ai';
+import {OpenAI} from 'openai';
+import type {ChatCompletionCreateParams} from 'openai/resources/chat';
+import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
+import {cookies} from 'next/headers';
+import {Database} from '@/lib/supabase.types';
 
 export const runtime = 'edge';
 
@@ -34,36 +34,36 @@ const functions: ChatCompletionCreateParams.Function[] = [
 
 export async function POST(req: Request) {
   const cookieStore = cookies();
-  const supabase = createServerComponentClient<Database>({ cookies: () => cookieStore });
+  const supabase = createServerComponentClient<Database>({
+    cookies: () => cookieStore,
+  });
 
   async function createProject(name: string, description: string) {
     try {
       const {
-        data: { user },
+        data: {user},
       } = await supabase.auth.getUser();
 
-      if(!user) {
-        throw "no user!"
+      if (!user) {
+        throw 'no user!';
       }
 
-      let { data, error } = await supabase
+      const {data, error} = await supabase
         .from('projects')
-        .insert([
-          { name, description, user_id: user.id }
-        ]).select()
-        
+        .insert([{name, description, user_id: user.id}])
+        .select();
+
       if (error) {
         throw error;
       }
-      
-      return data
-      
+
+      return data;
     } catch (error) {
       console.error(error);
     }
   }
 
-  const { messages } = await req.json();
+  const {messages} = await req.json();
 
   const response = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo-0613',
@@ -77,12 +77,17 @@ export async function POST(req: Request) {
       console.log(completion);
     },
     experimental_onFunctionCall: async (
-      { name, arguments: args },
+      {name, arguments: args},
       createFunctionCallMessages,
     ) => {
       if (name === 'create_project') {
-        const projectData = await createProject(args.name as string, args.description as string);
-        const newMessages = createFunctionCallMessages(projectData ? projectData[0] : null);
+        const projectData = await createProject(
+          args.name as string,
+          args.description as string,
+        );
+        const newMessages = createFunctionCallMessages(
+          projectData ? projectData[0] : null,
+        );
         return openai.chat.completions.create({
           messages: [...messages, ...newMessages],
           stream: true,
@@ -90,7 +95,7 @@ export async function POST(req: Request) {
           functions,
         });
       }
-    }
+    },
   });
 
   return new StreamingTextResponse(stream);

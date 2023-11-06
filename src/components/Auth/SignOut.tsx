@@ -1,12 +1,12 @@
 'use client';
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
 
 export default function SignOut() {
   const supabase = createClientComponentClient();
 
   async function handleSignOut() {
-    const { error } = await supabase.auth.signOut();
+    const {error} = await supabase.auth.signOut();
 
     if (error) {
       console.error('ERROR:', error);

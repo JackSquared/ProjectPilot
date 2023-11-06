@@ -1,16 +1,16 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
+import {cookies} from 'next/headers';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import {redirect} from 'next/navigation';
 
 import SignOut from '@/components/Auth/SignOut';
 
 export default async function Profile() {
   const cookieStore = cookies();
-  const supabase = createServerComponentClient({ cookies: () => cookieStore });
+  const supabase = createServerComponentClient({cookies: () => cookieStore});
 
   const {
-    data: { user },
+    data: {user},
   } = await supabase.auth.getUser();
 
   if (!user) {
@@ -22,7 +22,9 @@ export default async function Profile() {
       <h2>User Profile</h2>
       <code className="highlight">{user.email}</code>
       <div className="heading">Last Signed In:</div>
-      <code className="highlight">{new Date(user.last_sign_in_at || Date.now()).toUTCString()}</code>
+      <code className="highlight">
+        {new Date(user.last_sign_in_at || Date.now()).toUTCString()}
+      </code>
       <Link className="button" href="/">
         Go Home
       </Link>

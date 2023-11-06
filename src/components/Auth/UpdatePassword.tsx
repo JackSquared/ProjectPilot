@@ -1,19 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {useState} from 'react';
+import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
 import cn from 'classnames';
-import { Field, Form, Formik } from 'formik';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import {Field, Form, Formik} from 'formik';
+import {useRouter} from 'next/navigation';
 import * as Yup from 'yup';
 
-import { FormData } from '@/lib/types';
+import {FormData} from '@/lib/types';
 
-type UpdatePasswordFormData = Pick<FormData, 'password'>
+type UpdatePasswordFormData = Pick<FormData, 'password'>;
 
 const UpdatePasswordSchema = Yup.object().shape({
-    password: Yup.string().required('Required'),
+  password: Yup.string().required('Required'),
 });
 
 const UpdatePassword = () => {
@@ -21,9 +20,8 @@ const UpdatePassword = () => {
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-
   async function updatePassword(formData: UpdatePasswordFormData) {
-    const { error } = await supabase.auth.updateUser({
+    const {error} = await supabase.auth.updateUser({
       password: formData.password,
     });
 
@@ -44,11 +42,14 @@ const UpdatePassword = () => {
         validationSchema={UpdatePasswordSchema}
         onSubmit={updatePassword}
       >
-        {({ errors, touched }) => (
+        {({errors, touched}) => (
           <Form className="column w-full">
             <label htmlFor="email">New Password</label>
             <Field
-              className={cn('input', errors.password && touched.password && 'bg-red-50')}
+              className={cn(
+                'input',
+                errors.password && touched.password && 'bg-red-50',
+              )}
               id="password"
               name="password"
               type="password"
