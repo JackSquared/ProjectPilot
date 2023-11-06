@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {useState} from 'react';
+import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
 import cn from 'classnames';
-import { Field, Form, Formik } from 'formik';
+import {Field, Form, Formik} from 'formik';
 import Link from 'next/link';
 import * as Yup from 'yup';
 
-import { FormData } from '@/lib/types';
+import {FormData} from '@/lib/types';
 
 const SignUpSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -20,7 +20,7 @@ const SignUp = () => {
   const [successMsg, setSuccessMsg] = useState<null | string>(null);
 
   async function signUp(formData: FormData) {
-    const { error } = await supabase.auth.signUp({
+    const {error} = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
     });
@@ -28,7 +28,9 @@ const SignUp = () => {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      setSuccessMsg('Success! Please check your email for further instructions.');
+      setSuccessMsg(
+        'Success! Please check your email for further instructions.',
+      );
     }
   }
 
@@ -43,7 +45,7 @@ const SignUp = () => {
         validationSchema={SignUpSchema}
         onSubmit={signUp}
       >
-        {({ errors, touched }) => (
+        {({errors, touched}) => (
           <Form className="column w-full">
             <label htmlFor="email">Email</label>
             <Field
@@ -59,7 +61,10 @@ const SignUp = () => {
 
             <label htmlFor="email">Password</label>
             <Field
-              className={cn('input', errors.password && touched.password && 'bg-red-50')}
+              className={cn(
+                'input',
+                errors.password && touched.password && 'bg-red-50',
+              )}
               id="password"
               name="password"
               type="password"

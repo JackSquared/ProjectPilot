@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {useState} from 'react';
+import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
 import cn from 'classnames';
-import { Field, Form, Formik } from 'formik';
+import {Field, Form, Formik} from 'formik';
 import Link from 'next/link';
 import * as Yup from 'yup';
 
-import { FormData } from '@/lib/types';
+import {FormData} from '@/lib/types';
 
-type ResetPasswordFormData = Pick<FormData, 'email'>
+type ResetPasswordFormData = Pick<FormData, 'email'>;
 
 const ResetPasswordSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -21,7 +21,7 @@ const ResetPassword = () => {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   async function resetPassword(formData: ResetPasswordFormData) {
-    const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+    const {error} = await supabase.auth.resetPasswordForEmail(formData.email, {
       redirectTo: `${window.location.origin}/auth/update-password`,
     });
 
@@ -42,7 +42,7 @@ const ResetPassword = () => {
         validationSchema={ResetPasswordSchema}
         onSubmit={resetPassword}
       >
-        {({ errors, touched }) => (
+        {({errors, touched}) => (
           <Form className="column w-full">
             <label htmlFor="email">Email</label>
             <Field

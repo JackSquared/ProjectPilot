@@ -1,5 +1,6 @@
-const { exec } = require('child_process');
-const { config } = require('dotenv');
+/* eslint-disable @typescript-eslint/no-var-requires */
+const {exec} = require('child_process');
+const {config} = require('dotenv');
 
 config();
 const SUPABASE_PROJECT_ID = process.env.SUPABASE_PROJECT_ID;
@@ -14,4 +15,4 @@ exec(command, (error: Error | null, stdout: string, stderr: string) => {
     console.error(`stderr: ${stderr}`);
     return;
   }
-})
+});
