@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
     "generate:types": "npx ts-node lib/generate-types.ts"
   },
   "dependencies": {
