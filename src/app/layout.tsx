@@ -25,6 +25,7 @@ export default async function RootLayout({
   } = await supabase.auth.getSession();
 
   const accessToken = session?.access_token || null;
+  const user = session?.user;
 
   return (
     <html lang="en">
@@ -32,9 +33,7 @@ export default async function RootLayout({
         <div className="flex flex-row py-2">
           <AuthProvider accessToken={accessToken}>
             <div className="flex-1 w-2/3">{children}</div>
-            <div className="flex-1 w-1/3">
-              <Chat />
-            </div>
+            <div className="flex-1 w-1/3">{user ? <Chat /> : <></>}</div>
           </AuthProvider>
         </div>
       </body>
