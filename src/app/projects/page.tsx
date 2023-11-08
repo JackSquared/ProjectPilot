@@ -1,28 +1,54 @@
-import Projects from '@/components/Projects';
+'use client';
+
 import {Database} from '@/lib/supabase.types';
-import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
-import {notFound, redirect} from 'next/navigation';
+import Link from 'next/link';
+import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
+import {useRouter} from 'next/navigation';
+import {useEffect} from 'react';
 
-export default async function ProjectsPage() {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient<Database>({
-    cookies: () => cookieStore,
-  });
+type Project = Database['public']['Tables']['projects']['Row'];
 
-  const {
-    data: {user},
-  } = await supabase.auth.getUser();
+type ProjectsProps = {
+  projects: Project[];
+};
 
-  if (!user) {
-    redirect('/sign-in');
-  }
+export default function Projects({projects}: ProjectsProps) {
+  const supabase = createClientComponentClient<Database>();
+  const router = useRouter();
 
-  const {data: projects} = await supabase.from('projects').select('*');
+  useEffect(() => {
+    const channel = supabase
+      .channel('projects')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'projects',
+        },
+        () => {
+          router.refresh();
+        },
+      )
+      .subscribe();
 
-  if (!projects) {
-    notFound();
-  }
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, router]);
 
-  return <Projects projects={projects} />;
+  const showProject = (project: Project) => {
+    const projectPath = '/projects/' + project.id;
+    return (
+      <div className="project_card">
+        <Link className="button" href={projectPath}>
+          {project.name}
+        </Link>
+      </div>
+    );
+  };
+
+  return (
+    <div className="grid grid-cols-3 gap-4">{projects?.map(showProject)}</div>
+  );
 }
