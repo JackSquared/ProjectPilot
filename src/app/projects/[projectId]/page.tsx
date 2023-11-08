@@ -24,8 +24,9 @@ export default async function ProjectPage({
 
   const {data: project, error} = await supabase
     .from('projects')
-    .select('*')
-    .eq('id', params.projectId);
+    .select()
+    .match({id: params.projectId})
+    .single();
 
-  return <Project project={project[0]} />;
+  return <Project project={project} />;
 }
