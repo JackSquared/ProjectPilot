@@ -4,6 +4,7 @@ import type {ChatCompletionCreateParams} from 'openai/resources/chat';
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import {cookies} from 'next/headers';
 import {Database} from '@/lib/supabase.types';
+import {tryCreateProject} from '@/lib/projects/queries';
 
 export const runtime = 'edge';
 
@@ -48,16 +49,7 @@ export async function POST(req: Request) {
         throw 'no user!';
       }
 
-      const {data, error} = await supabase
-        .from('projects')
-        .insert([{name, description, user_id: user.id}])
-        .select();
-
-      if (error) {
-        throw error;
-      }
-
-      return data;
+      return tryCreateProject(supabase, name, description, user.id);
     } catch (error) {
       console.error(error);
     }
