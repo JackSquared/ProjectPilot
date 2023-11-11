@@ -2,7 +2,7 @@ import Project from '@/app/components/Project';
 import {Database} from '@/lib/supabase.types';
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import {cookies} from 'next/headers';
-import {notFound, redirect} from 'next/navigation';
+import {redirect} from 'next/navigation';
 
 export default async function ProjectPage({
   params,
@@ -22,15 +22,5 @@ export default async function ProjectPage({
     redirect('/sign-in');
   }
 
-  const {data: project} = await supabase
-    .from('projects')
-    .select()
-    .match({id: params.projectId})
-    .single();
-
-  if (!project) {
-    notFound();
-  }
-
-  return <Project project={project} />;
+  return <Project projectId={params.projectId} />;
 }
