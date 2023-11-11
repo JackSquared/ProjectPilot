@@ -32,7 +32,10 @@ export default async function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Navbar />
-        <div className={`flex h-screen overflow-hidden pl-64`}>
+        <div
+          className={`flex overflow-hidden pl-64`}
+          style={{height: 'calc(100vh - <navbar-height>)'}}
+        >
           <AuthProvider accessToken={accessToken}>
             <div className="flex-1 w-full md:w-2/3 overflow-auto">
               {children}
