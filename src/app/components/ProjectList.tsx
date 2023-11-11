@@ -15,7 +15,8 @@ export default function ProjectList() {
 
   useEffect(() => {
     const getProjects = async () => {
-      const res = await fetch('http://localhost:3000/api/projects');
+      console.log(window.location);
+      const res = await fetch('/api/projects');
       const data = await res.json();
       setProjects(data);
     };

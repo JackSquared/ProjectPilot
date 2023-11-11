@@ -9,9 +9,7 @@ export default function Project({projectId}: {projectId: string}) {
   const [project, setProject] = useState<Project | null>();
   useEffect(() => {
     const getProjects = async () => {
-      const res = await fetch(
-        `http://localhost:3000/api/projects/${projectId}`,
-      );
+      const res = await fetch(`/api/projects/${projectId}`);
       const data = await res.json();
       setProject(data);
     };
