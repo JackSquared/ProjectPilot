@@ -6,7 +6,6 @@
   .card {
     @apply column min-w-[20rem] items-center gap-8 rounded-2xl bg-white py-8 px-4 shadow-md sm:min-w-[24rem] sm:px-10;
   }
-
   .project_card {
     @apply column items-center rounded-2xl py-8 gap-8 shadow-md;
   }

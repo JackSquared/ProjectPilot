@@ -30,10 +30,14 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="flex flex-row py-2">
+        <div className="flex flex-col md:flex-row h-screen py-2 overflow-hidden">
           <AuthProvider accessToken={accessToken}>
-            <div className="flex-1 w-2/3">{children}</div>
-            <div className="flex-1 w-1/3">{user ? <Chat /> : <></>}</div>
+            <div className="flex-1 w-full md:w-2/3 overflow-auto">
+              {children}
+            </div>
+            <div className="flex-1 w-full md:w-1/3 md:h-auto overflow-auto">
+              {user ? <Chat /> : null}
+            </div>
           </AuthProvider>
         </div>
       </body>

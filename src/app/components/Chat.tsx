@@ -1,33 +1,43 @@
 'use client';
 
 import {useChat} from 'ai/react';
+import {useEffect, useRef} from 'react';
 
-const openingMessage = `Hello! I am ProjectPilot, an AI that empowers people to build their ideas.
-Let's have a conversation about your idea so that I can get on the same page as you and then we can discuss how we can make it a reality.
-I will assume you are starting from a fresh idea so it is best for you to start with a high level concept for your idea.
-However, if you have already made decisions about implementation then feel free to give me those details.`;
+const openingMessage =
+  "Hello and welcome to ProjectPilot! Think of me as your personal AI assistant, ready to help whether you're starting a new project, looking to advance an existing one, or in the mood to brainstorm possibilities. Tell me where you are in your creative process or project development, and I'll provide the tailored support you need. Are we charting new territory today, carrying on with our progress, or sparking new ideas?";
 
 export default function Chat() {
   const {messages, input, handleInputChange, handleSubmit} = useChat({
     initialMessages: [{role: 'assistant', id: '0', content: openingMessage}],
   });
 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({behavior: 'smooth'});
+    }
+  }, [messages]);
+
   return (
-    <div className="mx-auto w-full max-w-md py-24 flex flex-col stretch">
-      {messages.length > 0
-        ? messages.map((m) => (
-            <div key={m.id} className="whitespace-pre-wrap">
-              <div className="my-2 font-bold">
+    <div className="mx-auto w-full max-w-md flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto py-4 mb-4">
+        {messages.length > 0 &&
+          messages.map((m, index) => (
+            <div key={m.id} className="whitespace-pre-wrap my-2">
+              <div className="font-bold">
                 {m.role === 'user' ? 'User: ' : 'AI: '}
               </div>
               {m.content}
+              {index === messages.length - 1 ? (
+                <div ref={messagesEndRef} />
+              ) : null}
             </div>
-          ))
-        : null}
-
-      <form onSubmit={handleSubmit}>
+          ))}
+      </div>
+      <form onSubmit={handleSubmit} className="mb-4">
         <input
-          className="input fixed max-w-md bottom-0 mb-8 shadow-xl p-2"
+          className="input w-full shadow-xl p-2"
           value={input}
           placeholder="Say something..."
           onChange={handleInputChange}
