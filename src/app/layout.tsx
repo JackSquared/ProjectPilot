@@ -4,6 +4,7 @@ import AuthProvider from '@/app/components/Auth/AuthProvider';
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import {cookies} from 'next/headers';
 import Chat from '@/app/components/Chat';
+import Navbar from '@/app/components/Navbar';
 
 const inter = Inter({subsets: ['latin']});
 
@@ -30,7 +31,8 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="flex flex-col md:flex-row h-screen py-2 overflow-hidden">
+        <Navbar />
+        <div className={`flex h-screen overflow-hidden pl-64`}>
           <AuthProvider accessToken={accessToken}>
             <div className="flex-1 w-full md:w-2/3 overflow-auto">
               {children}

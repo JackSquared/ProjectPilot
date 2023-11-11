@@ -20,24 +20,21 @@ export default function Chat() {
   }, [messages]);
 
   return (
-    <div className="mx-auto w-full max-w-md flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto py-4 mb-4">
-        {messages.length > 0 &&
-          messages.map((m, index) => (
-            <div key={m.id} className="whitespace-pre-wrap my-2">
-              <div className="font-bold">
+    <div className="mx-auto w-full max-w-md py-24 flex flex-col stretch p-4 md:p-8">
+      {messages.length > 0
+        ? messages.map((m) => (
+            <div key={m.id} className="whitespace-pre-wrap">
+              <div className="my-2 font-bold">
                 {m.role === 'user' ? 'User: ' : 'AI: '}
               </div>
               {m.content}
-              {index === messages.length - 1 ? (
-                <div ref={messagesEndRef} />
-              ) : null}
             </div>
-          ))}
-      </div>
-      <form onSubmit={handleSubmit} className="mb-4">
+          ))
+        : null}
+
+      <form onSubmit={handleSubmit}>
         <input
-          className="input w-full shadow-xl p-2"
+          className="input fixed max-w-md bottom-0 mb-8 shadow-xl p-2"
           value={input}
           placeholder="Say something..."
           onChange={handleInputChange}
