@@ -2,19 +2,25 @@
 
 import {Database} from '@/lib/supabase.types';
 import Link from 'next/link';
+import {useEffect, useState} from 'react';
 import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
 import {useRouter} from 'next/navigation';
-import {useEffect} from 'react';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
-type ProjectsProps = {
-  projects: Project[];
-};
-
-export default function Projects({projects}: ProjectsProps) {
+export default function Projects() {
   const supabase = createClientComponentClient<Database>();
+  const [projects, setProjects] = useState<Project[] | null>();
   const router = useRouter();
+
+  useEffect(() => {
+    const getProjects = async () => {
+      const res = await fetch('http://localhost:3000/api/projects');
+      const data = await res.json();
+      setProjects(data);
+    };
+    getProjects();
+  }, []);
 
   useEffect(() => {
     const channel = supabase
@@ -38,6 +44,7 @@ export default function Projects({projects}: ProjectsProps) {
   }, [supabase, router]);
 
   const showProject = (project: Project) => {
+    console.log(project);
     const projectPath = '/projects/' + project.id;
     return (
       <div className="project_card">
