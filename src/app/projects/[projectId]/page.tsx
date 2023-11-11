@@ -1,4 +1,4 @@
-import Project from '@/components/Project';
+import Project from '@/app/components/Project';
 import {Database} from '@/lib/supabase.types';
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import {cookies} from 'next/headers';

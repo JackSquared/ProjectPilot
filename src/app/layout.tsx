@@ -1,9 +1,9 @@
 import './globals.css';
 import {Inter} from 'next/font/google';
-import AuthProvider from '@/components/Auth/AuthProvider';
+import AuthProvider from '@/app/components/Auth/AuthProvider';
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import {cookies} from 'next/headers';
-import Chat from '@/components/Chat';
+import Chat from '@/app/components/Chat';
 
 const inter = Inter({subsets: ['latin']});
 
