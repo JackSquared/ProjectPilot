@@ -15,7 +15,6 @@ export default function ProjectList() {
 
   useEffect(() => {
     const getProjects = async () => {
-      console.log(window.location);
       const res = await fetch('/api/projects');
       const data = await res.json();
       setProjects(data);
@@ -45,7 +44,6 @@ export default function ProjectList() {
   }, [supabase, router]);
 
   const showProject = (project: Project) => {
-    console.log(project);
     const projectPath = '/projects/' + project.id;
     return (
       <div className="project_card">

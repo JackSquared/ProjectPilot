@@ -7,6 +7,7 @@ type Project = Database['public']['Tables']['projects']['Row'];
 
 export default function Project({projectId}: {projectId: string}) {
   const [project, setProject] = useState<Project | null>();
+
   useEffect(() => {
     const getProjects = async () => {
       const res = await fetch(`/api/projects/${projectId}`);
@@ -15,6 +16,7 @@ export default function Project({projectId}: {projectId: string}) {
     };
     getProjects();
   }, []);
+
   const showProject = (project: Project) => {
     return <p>{project.name}</p>;
   };
