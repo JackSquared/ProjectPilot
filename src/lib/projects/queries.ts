@@ -16,15 +16,9 @@ export function getProjectById(client: SupabaseClient, projectId: number) {
     .single();
 }
 
-export function getProjects(client: SupabaseClient) {
-  return client
-    .from('projects')
-    .select(
-      `
-    id,
-    name`,
-    )
-    .throwOnError();
+export async function getProjects(client: SupabaseClient<Database>) {
+  const {data} = await client.from('projects').select('*');
+  return data;
 }
 
 export async function tryCreateProject(

@@ -31,7 +31,7 @@ export default async function Home() {
         Go to Profile
       </Link>
       <div className="">
-        <Projects projects={projects} />
+        <Projects />
       </div>
     </>
   );
