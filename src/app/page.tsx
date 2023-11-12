@@ -3,7 +3,7 @@ import {redirect} from 'next/navigation';
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import Link from 'next/link';
 import {Database} from '@/lib/supabase.types';
-import Projects from '@/app/projects/page';
+import Chat from './components/Chat';
 
 export default async function Home() {
   const cookieStore = cookies();
@@ -25,7 +25,7 @@ export default async function Home() {
         Go to Profile
       </Link>
       <div className="">
-        <Projects />
+        <Chat />
       </div>
     </>
   );
