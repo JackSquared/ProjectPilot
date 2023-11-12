@@ -37,10 +37,8 @@ export default async function RootLayout({
           style={{height: 'calc(100vh - <navbar-height>)'}}
         >
           <AuthProvider accessToken={accessToken}>
-            <div className="flex-1 w-full md:w-2/3 overflow-auto">
-              {children}
-            </div>
-            <div className="flex-1 w-full md:w-1/3 md:h-auto overflow-auto">
+            <div className="flex-1 w-full md:w-2/3">{children}</div>
+            <div className="flex-1 w-full md:w-2/3">
               {user ? <Chat /> : null}
             </div>
           </AuthProvider>

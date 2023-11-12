@@ -15,4 +15,8 @@
   .input {
     @apply w-full rounded border border-slate-300 focus:shadow-none;
   }
+
+  html, body {
+    @apply h-screen w-full m-0 p-0 overflow-hidden;
+  }
 }
