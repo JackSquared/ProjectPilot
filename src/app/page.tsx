@@ -1,5 +1,5 @@
 import {cookies} from 'next/headers';
-import {notFound, redirect} from 'next/navigation';
+import {redirect} from 'next/navigation';
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import Link from 'next/link';
 import {Database} from '@/lib/supabase.types';
@@ -17,12 +17,6 @@ export default async function Home() {
 
   if (!user) {
     redirect('/sign-in');
-  }
-
-  const {data: projects} = await supabase.from('projects').select('*');
-
-  if (!projects) {
-    notFound();
   }
 
   return (
