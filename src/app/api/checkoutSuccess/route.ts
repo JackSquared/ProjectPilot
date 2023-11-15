@@ -1,37 +1,77 @@
-// import Cors from 'micro-cors';
+import Stripe from 'stripe';
+import {NextApiRequest, NextApiResponse} from 'next';
 import {headers} from 'next/headers';
-import {NextResponse} from 'next/server';
+import {IncomingMessage} from 'http';
 
-const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
+interface CustomNextApiRequest extends NextApiRequest, IncomingMessage {}
 
-// const cors = Cors({
-//   allowMethods: ['POST', 'HEAD'],
-// });
+export async function POST(req: CustomNextApiRequest, res: NextApiResponse) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
-const secret = process.env.STRIPE_WEBHOOK_SECRET || '';
+  const webhookSecret: string = process.env.STRIPE_WEBHOOK_SECRET || '';
 
-export async function POST(req: Request) {
-  try {
-    console.log('req.body:', req);
-    const body = await req.text();
+  if (req.method === 'POST') {
+    const headersList = headers();
+    const sig = headersList.get('stripe-signature');
+    console.log('🚀 ~ file: route.ts:11 ~ POST ~ sig:', sig);
 
-    const signature = headers().get('stripe-signature');
+    let event: Stripe.Event;
 
-    const event = stripe.webhooks.constructEvent(null, signature, secret);
-
-    if (event.type === 'checkout.session.completed') {
-      console.log('🚀 ~ filroute.ts:29 ~ POST ~ add to db here:');
+    try {
+      const buff = await buffer(req);
+      event = stripe.webhooks.constructEvent(
+        buff.toString(),
+        sig,
+        webhookSecret,
+      );
+    } catch (err) {
+      // On error, log and return the error message
+      console.log(`❌ Error message: ${err}`);
+      res.status(400).send(`Webhook Error: ${err}`);
+      return;
     }
 
-    return NextResponse.json({result: event, ok: true});
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      {
-        message: 'something went wrong',
-        ok: false,
-      },
-      {status: 500},
-    );
+    // Successfully constructed event
+    console.log('✅ Success:', event.id);
+
+    // Cast event data to Stripe object
+    if (event.type === 'payment_intent.succeeded') {
+      const stripeObject: Stripe.PaymentIntent = event.data
+        .object as Stripe.PaymentIntent;
+      console.log(`💰 PaymentIntent status: ${stripeObject.status}`);
+    } else if (event.type === 'charge.succeeded') {
+      const charge = event.data.object as Stripe.Charge;
+      console.log(`💵 Charge id: ${charge.id}`);
+    } else {
+      console.warn(`🤷‍♀️ Unhandled event type: ${event.type}`);
+    }
+
+    // Return a response to acknowledge receipt of the event
+    res.json({received: true});
+  } else {
+    res.setHeader('Allow', 'POST');
+    res.status(405).end('Method Not Allowed');
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+const buffer = (req: NextApiRequest) => {
+  return new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+
+    req.on('data', (chunk: Buffer) => {
+      chunks.push(chunk);
+    });
+
+    req.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+
+    req.on('error', reject);
+  });
+};

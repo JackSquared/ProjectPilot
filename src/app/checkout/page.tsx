@@ -4,7 +4,10 @@ import getStripe from './getStripe';
 
 export default async function Checkout() {
   const handlePayment = async () => {
-    const response = await fetch('/api/checkout/', {method: 'post'});
+    const response = await fetch('/api/checkout/', {
+      method: 'post',
+      body: JSON.stringify({jack: 'twat'}),
+    });
     const json = await response.json();
 
     if (!json.ok) {
