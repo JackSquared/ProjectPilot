@@ -13,18 +13,14 @@ export async function POST(req: Request) {
     );
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    // On error, log and return the error message.
     if (err! instanceof Error) console.log(err);
-    console.log(`❌ Error message: ${errorMessage}`);
     return NextResponse.json(
       {message: `Webhook Error: ${errorMessage}`},
       {status: 400},
     );
   }
 
-  // Successfully constructed event.
-  console.log('✅ JACKATWAT:', event.id);
-  console.log('🚀 ~ file: route.ts:27 ~ POST ~ event:', event);
+  console.log('✅ SUCCESS:', event.id);
 
   const permittedEvents: string[] = [
     'checkout.session.completed',
@@ -60,6 +56,5 @@ export async function POST(req: Request) {
       );
     }
   }
-  // Return a response to acknowledge receipt of the event.
   return NextResponse.json({message: 'Received'}, {status: 200});
 }
