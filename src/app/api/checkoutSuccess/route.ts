@@ -1,77 +1,65 @@
-import Stripe from 'stripe';
-import {NextApiRequest, NextApiResponse} from 'next';
-import {headers} from 'next/headers';
-import {IncomingMessage} from 'http';
+import type {Stripe} from 'stripe';
+import {NextResponse} from 'next/server';
+import {stripe} from '@/lib/stripe';
 
-interface CustomNextApiRequest extends NextApiRequest, IncomingMessage {}
+export async function POST(req: Request) {
+  let event: Stripe.Event;
 
-export async function POST(req: CustomNextApiRequest, res: NextApiResponse) {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
+  try {
+    event = stripe.webhooks.constructEvent(
+      await (await req.blob()).text(),
+      req.headers.get('stripe-signature') as string,
+      process.env.STRIPE_WEBHOOK_SECRET as string,
+    );
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    // On error, log and return the error message.
+    if (err! instanceof Error) console.log(err);
+    console.log(`❌ Error message: ${errorMessage}`);
+    return NextResponse.json(
+      {message: `Webhook Error: ${errorMessage}`},
+      {status: 400},
+    );
+  }
 
-  const webhookSecret: string = process.env.STRIPE_WEBHOOK_SECRET || '';
+  // Successfully constructed event.
+  console.log('✅ JACKATWAT:', event.id);
+  console.log('🚀 ~ file: route.ts:27 ~ POST ~ event:', event);
 
-  if (req.method === 'POST') {
-    const headersList = headers();
-    const sig = headersList.get('stripe-signature');
-    console.log('🚀 ~ file: route.ts:11 ~ POST ~ sig:', sig);
+  const permittedEvents: string[] = [
+    'checkout.session.completed',
+    'payment_intent.succeeded',
+    'payment_intent.payment_failed',
+  ];
 
-    let event: Stripe.Event;
+  if (permittedEvents.includes(event.type)) {
+    let data;
 
     try {
-      const buff = await buffer(req);
-      event = stripe.webhooks.constructEvent(
-        buff.toString(),
-        sig,
-        webhookSecret,
+      switch (event.type) {
+        case 'checkout.session.completed':
+          data = event.data.object as Stripe.Checkout.Session;
+          console.log(`💰 CheckoutSession status: ${data.payment_status}`);
+          break;
+        case 'payment_intent.payment_failed':
+          data = event.data.object as Stripe.PaymentIntent;
+          console.log(`❌ Payment failed: ${data.last_payment_error?.message}`);
+          break;
+        case 'payment_intent.succeeded':
+          data = event.data.object as Stripe.PaymentIntent;
+          console.log(`💰 PaymentIntent status: ${data.status}`);
+          break;
+        default:
+          throw new Error(`Unhandled event: ${event.type}`);
+      }
+    } catch (error) {
+      console.log(error);
+      return NextResponse.json(
+        {message: 'Webhook handler failed'},
+        {status: 500},
       );
-    } catch (err) {
-      // On error, log and return the error message
-      console.log(`❌ Error message: ${err}`);
-      res.status(400).send(`Webhook Error: ${err}`);
-      return;
     }
-
-    // Successfully constructed event
-    console.log('✅ Success:', event.id);
-
-    // Cast event data to Stripe object
-    if (event.type === 'payment_intent.succeeded') {
-      const stripeObject: Stripe.PaymentIntent = event.data
-        .object as Stripe.PaymentIntent;
-      console.log(`💰 PaymentIntent status: ${stripeObject.status}`);
-    } else if (event.type === 'charge.succeeded') {
-      const charge = event.data.object as Stripe.Charge;
-      console.log(`💵 Charge id: ${charge.id}`);
-    } else {
-      console.warn(`🤷‍♀️ Unhandled event type: ${event.type}`);
-    }
-
-    // Return a response to acknowledge receipt of the event
-    res.json({received: true});
-  } else {
-    res.setHeader('Allow', 'POST');
-    res.status(405).end('Method Not Allowed');
   }
+  // Return a response to acknowledge receipt of the event.
+  return NextResponse.json({message: 'Received'}, {status: 200});
 }
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-const buffer = (req: NextApiRequest) => {
-  return new Promise<Buffer>((resolve, reject) => {
-    const chunks: Buffer[] = [];
-
-    req.on('data', (chunk: Buffer) => {
-      chunks.push(chunk);
-    });
-
-    req.on('end', () => {
-      resolve(Buffer.concat(chunks));
-    });
-
-    req.on('error', reject);
-  });
-};
