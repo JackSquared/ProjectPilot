@@ -23,7 +23,7 @@ export async function POST() {
           price_data: {
             currency: 'gbp',
             product_data: {
-              name: 'Itinerary',
+              name: 'Project Pilot Pro Ultra',
             },
             unit_amount: 100,
           },
