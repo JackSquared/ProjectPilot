@@ -20,8 +20,6 @@ export async function POST(req: Request) {
     );
   }
 
-  console.log('✅ SUCCESS:', event.id);
-
   const permittedEvents: string[] = [
     'checkout.session.completed',
     'payment_intent.succeeded',
