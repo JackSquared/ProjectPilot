@@ -1,13 +1,14 @@
 import {NextResponse} from 'next/server';
 import Stripe from 'stripe';
-import {cookies} from 'next/headers';
+import {cookies, headers} from 'next/headers';
 import {createRouteHandlerClient} from '@supabase/auth-helpers-nextjs';
 import {Database} from '@/lib/supabase.types';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST() {
   const cookieStore = cookies();
+  const headerStore = headers();
   const supabase = createRouteHandlerClient<Database>({
     cookies: () => cookieStore,
   });
@@ -29,8 +30,8 @@ export async function POST() {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.URL}/checkoutSuccess`,
-      cancel_url: `${process.env.URL}/`,
+      success_url: `${headerStore.get('origin')}/checkoutSuccess`,
+      cancel_url: `${headerStore.get('origin')}/`,
     };
 
     const checkoutSession: Stripe.Checkout.Session =
