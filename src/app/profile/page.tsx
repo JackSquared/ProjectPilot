@@ -3,7 +3,7 @@ import {cookies} from 'next/headers';
 import Link from 'next/link';
 import {redirect} from 'next/navigation';
 
-import SignOut from '@/app/components/Auth/SignOut';
+import SignOut from '@/components/Auth/SignOut';
 
 export default async function Profile() {
   const cookieStore = cookies();
