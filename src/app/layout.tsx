@@ -38,13 +38,17 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex flex-row py-2">
-            <AuthProvider accessToken={accessToken}>
-              <ModeToggle />
-              <div className="flex-1 w-2/3">{children}</div>
-              <div className="flex-1 w-1/3">{user ? <Chat /> : <></>}</div>
-            </AuthProvider>
-          </div>
+          <AuthProvider accessToken={accessToken}>
+            <div className="container mx-auto">
+              <div className="w-full">
+                <ModeToggle />
+              </div>
+              <div className="flex">
+                <div className="flex-2">{children}</div>
+                <div className="flex-1">{user ? <Chat /> : <></>}</div>
+              </div>
+            </div>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
