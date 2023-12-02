@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {useEffect, useState} from 'react';
 import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
 import {useRouter} from 'next/navigation';
+import {Card, CardContent} from '@/components/ui/card';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -46,11 +47,13 @@ export default function ProjectList() {
   const showProject = (project: Project) => {
     const projectPath = '/projects/' + project.id;
     return (
-      <div className="project_card">
-        <Link className="button" href={projectPath}>
-          {project.name}
-        </Link>
-      </div>
+      <Card>
+        <CardContent>
+          <Link className="button" href={projectPath}>
+            {project.name}
+          </Link>
+        </CardContent>
+      </Card>
     );
   };
 
