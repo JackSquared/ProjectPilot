@@ -4,6 +4,8 @@ import AuthProvider from '@/components/Auth/AuthProvider';
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import {cookies} from 'next/headers';
 import Chat from '@/components/Chat';
+import {ThemeProvider} from '@/components/theme-provider';
+import {ModeToggle} from '@/components/ModeToggle';
 
 const inter = Inter({subsets: ['latin']});
 
@@ -30,12 +32,20 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="flex flex-row py-2">
-          <AuthProvider accessToken={accessToken}>
-            <div className="flex-1 w-2/3">{children}</div>
-            <div className="flex-1 w-1/3">{user ? <Chat /> : <></>}</div>
-          </AuthProvider>
-        </div>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="flex flex-row py-2">
+            <AuthProvider accessToken={accessToken}>
+              <ModeToggle />
+              <div className="flex-1 w-2/3">{children}</div>
+              <div className="flex-1 w-1/3">{user ? <Chat /> : <></>}</div>
+            </AuthProvider>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );
