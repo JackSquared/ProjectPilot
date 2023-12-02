@@ -10,6 +10,13 @@ type Project = Database['public']['Tables']['projects']['Row'];
 
 export default function Project({projectId}: {projectId: string}) {
   const [project, setProject] = useState<Project | null>();
+  const [projectIcon, setProjectIcon] = useState<string | null>();
+
+  const generateImage = async () => {
+    const res = await fetch(`/api/projects/${projectId}/generate-image`);
+    const data = await res.json();
+    setProjectIcon(data);
+  };
 
   useEffect(() => {
     const getProjects = async () => {
@@ -25,12 +32,12 @@ export default function Project({projectId}: {projectId: string}) {
       <Card>
         <CardTitle>{project.name}</CardTitle>
         <Avatar>
-          <AvatarImage src="" />
+          <AvatarImage src={projectIcon ? projectIcon : ''} />
           <AvatarFallback>{project.name.at(0)}</AvatarFallback>
         </Avatar>
 
         <p>{project.description}</p>
-        <Button>Generate project image</Button>
+        <Button onClick={generateImage}>Generate project image</Button>
       </Card>
     );
   };
