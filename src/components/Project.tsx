@@ -2,6 +2,9 @@
 
 import {Database} from '@/lib/supabase.types';
 import {useEffect, useState} from 'react';
+import {Card, CardTitle} from '@/components/ui/card';
+import {Button} from './ui/button';
+import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -19,10 +22,16 @@ export default function Project({projectId}: {projectId: string}) {
 
   const showProject = (project: Project) => {
     return (
-      <div>
-        <p>{project.name}</p>
+      <Card>
+        <CardTitle>{project.name}</CardTitle>
+        <Avatar>
+          <AvatarImage src="" />
+          <AvatarFallback>{project.name.at(0)}</AvatarFallback>
+        </Avatar>
+
         <p>{project.description}</p>
-      </div>
+        <Button>Generate project image</Button>
+      </Card>
     );
   };
 
