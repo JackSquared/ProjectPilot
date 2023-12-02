@@ -18,7 +18,12 @@ export default function Project({projectId}: {projectId: string}) {
   }, []);
 
   const showProject = (project: Project) => {
-    return <p>{project.name}</p>;
+    return (
+      <div>
+        <p>{project.name}</p>
+        <p>{project.description}</p>
+      </div>
+    );
   };
 
   return project ? <div className="card">{showProject(project)}</div> : <></>;
