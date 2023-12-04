@@ -1,6 +1,5 @@
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import {cookies} from 'next/headers';
-import Link from 'next/link';
 import {redirect} from 'next/navigation';
 import {
   Card,
@@ -37,9 +36,6 @@ export default async function Profile() {
         </code>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Link className="button" href="/">
-          Go Home
-        </Link>
         <SignOut />
       </CardFooter>
     </Card>
