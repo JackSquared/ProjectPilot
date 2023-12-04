@@ -5,7 +5,7 @@ import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import {cookies} from 'next/headers';
 import Chat from '@/components/Chat';
 import {ThemeProvider} from '@/components/theme-provider';
-import {ModeToggle} from '@/components/ModeToggle';
+import {HeaderBar} from '@/components/HeaderBar';
 
 const inter = Inter({subsets: ['latin']});
 
@@ -40,10 +40,8 @@ export default async function RootLayout({
         >
           <AuthProvider accessToken={accessToken}>
             <div className="container mx-auto">
-              <div className="w-full">
-                <ModeToggle />
-              </div>
-              <div className="flex">
+              <HeaderBar user={user} />
+              <div className="flex items-center">
                 <div className="flex-2">{children}</div>
                 <div className="flex-1">{user ? <Chat /> : <></>}</div>
               </div>
