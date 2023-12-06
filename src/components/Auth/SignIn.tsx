@@ -9,6 +9,7 @@ import * as Yup from 'yup';
 
 import {FormData} from '@/lib/types';
 import {Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
 
 const SignInSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -79,9 +80,9 @@ const SignIn = () => {
                 Forgot your password?
               </Link>
 
-              <button className="button-inverse w-full mt-4" type="submit">
+              <Button className="button-inverse mt-4" type="submit">
                 Submit
-              </button>
+              </Button>
             </Form>
           )}
         </Formik>
