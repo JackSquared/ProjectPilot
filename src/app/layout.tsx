@@ -39,11 +39,12 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider accessToken={accessToken}>
-            <div className="container mx-auto">
+            <div className="px-2 py-8">
               <HeaderBar user={user} />
-              <div className="flex items-center">
-                <div className="flex-2">{children}</div>
-                <div className="flex-1">{user ? <Chat /> : <></>}</div>
+              <div className="flex flex-col md:flex-row gap-8 mt-8">
+                <main className="">{children}</main>
+
+                <aside className="">{user ? <Chat /> : null}</aside>
               </div>
             </div>
           </AuthProvider>
