@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
 import {CalendarIcon, ArrowRightIcon} from 'lucide-react';
-import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
+import {createClient} from '@/utils/supabase/client';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -22,7 +22,7 @@ export default function ProjectList({
   serverProjects: Project[];
 }) {
   const [projects, setProjects] = useState(serverProjects);
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClient();
 
   useEffect(() => {
     setProjects(serverProjects);
