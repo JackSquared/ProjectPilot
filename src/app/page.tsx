@@ -1,14 +1,9 @@
-import {cookies} from 'next/headers';
 import {redirect} from 'next/navigation';
-import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
-import {Database} from '@/lib/supabase.types';
+import {createClient} from '@/utils/supabase/server';
 import Projects from '@/app/projects/page';
 
 export default async function Home() {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient<Database>({
-    cookies: () => cookieStore,
-  });
+  const supabase = createClient();
 
   const {
     data: {user},

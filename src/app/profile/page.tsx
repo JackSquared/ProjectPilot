@@ -1,5 +1,4 @@
-import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
+import {createClient} from '@/utils/supabase/server';
 import {redirect} from 'next/navigation';
 import {
   Card,
@@ -12,16 +11,15 @@ import {
 import SignOut from '@/components/Auth/SignOut';
 
 export default async function Profile() {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient({cookies: () => cookieStore});
+  const supabase = createClient();
 
-  const {
-    data: {user},
-  } = await supabase.auth.getUser();
+  const {data, error} = await supabase.auth.getUser();
 
-  if (!user) {
+  if (error) {
     redirect('/sign-in');
   }
+
+  const user = data.user;
 
   return (
     <Card className="container mx-auto">

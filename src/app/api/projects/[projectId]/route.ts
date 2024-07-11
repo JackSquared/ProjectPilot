@@ -1,16 +1,11 @@
-import {Database} from '@/lib/supabase.types';
-import {createRouteHandlerClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
+import {createClient} from '@/utils/supabase/server';
 import {NextResponse} from 'next/server';
 
 export async function GET(
   request: Request,
   {params}: {params: {projectId: string}},
 ) {
-  const cookieStore = cookies();
-  const supabase = createRouteHandlerClient<Database>({
-    cookies: () => cookieStore,
-  });
+  const supabase = createClient();
   await supabase.auth.getSession();
   const {data: projects} = await supabase
     .from('projects')

@@ -1,11 +1,12 @@
 'use client';
 
 import {useState} from 'react';
-import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
+import {createClient} from '@/utils/supabase/client';
 import cn from 'classnames';
 import {Field, Form, Formik} from 'formik';
 import Link from 'next/link';
 import * as Yup from 'yup';
+import {useRouter} from 'next/navigation';
 
 import {FormData} from '@/lib/types';
 import {Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
@@ -17,8 +18,9 @@ const SignInSchema = Yup.object().shape({
 });
 
 const SignIn = () => {
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
   const [errorMsg, setErrorMsg] = useState<null | string>(null);
+  const router = useRouter();
 
   async function signIn(formData: FormData) {
     const {error} = await supabase.auth.signInWithPassword({
@@ -29,6 +31,8 @@ const SignIn = () => {
     if (error) {
       setErrorMsg(error.message);
     }
+
+    router.push('/');
   }
 
   return (

@@ -1,17 +1,13 @@
 import {NextResponse} from 'next/server';
 import Stripe from 'stripe';
-import {cookies, headers} from 'next/headers';
-import {createRouteHandlerClient} from '@supabase/auth-helpers-nextjs';
-import {Database} from '@/lib/supabase.types';
+import {headers} from 'next/headers';
+import {createClient} from '@/utils/supabase/server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST() {
-  const cookieStore = cookies();
   const headerStore = headers();
-  const supabase = createRouteHandlerClient<Database>({
-    cookies: () => cookieStore,
-  });
+  const supabase = createClient();
   await supabase.auth.getSession();
   try {
     const params: Stripe.Checkout.SessionCreateParams = {

@@ -8,19 +8,19 @@ import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
-export default function Project({projectId}: {projectId: string}) {
+export default function Project({serverProject}: {serverProject: Project}) {
   const [project, setProject] = useState<Project | null>();
   const [projectIcon, setProjectIcon] = useState<string | null>();
 
   const generateImage = async () => {
-    const res = await fetch(`/api/projects/${projectId}/generate-image`);
+    const res = await fetch(`/api/projects/${serverProject.id}/generate-image`);
     const data = await res.json();
     setProjectIcon(data);
   };
 
   useEffect(() => {
     const getProjects = async () => {
-      const res = await fetch(`/api/projects/${projectId}`);
+      const res = await fetch(`/api/projects/${serverProject.id}`);
       const data = await res.json();
       setProject(data);
     };

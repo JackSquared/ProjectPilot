@@ -1,7 +1,5 @@
 import Project from '@/components/Project';
-import {Database} from '@/lib/supabase.types';
-import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
+import {createClient} from '@/utils/supabase/server';
 import {redirect} from 'next/navigation';
 
 export default async function ProjectPage({
@@ -9,10 +7,7 @@ export default async function ProjectPage({
 }: {
   params: {projectId: string};
 }) {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient<Database>({
-    cookies: () => cookieStore,
-  });
+  const supabase = createClient();
 
   const {
     data: {user},
@@ -22,5 +17,15 @@ export default async function ProjectPage({
     redirect('/sign-in');
   }
 
-  return <Project projectId={params.projectId} />;
+  const {data: project} = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', params.projectId)
+    .single();
+
+  if (!project) {
+    redirect('/');
+  }
+
+  return <Project serverProject={project} />;
 }

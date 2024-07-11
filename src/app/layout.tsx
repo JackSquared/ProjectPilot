@@ -1,12 +1,11 @@
 import './globals.css';
 import {Inter} from 'next/font/google';
-import AuthProvider from '@/components/Auth/AuthProvider';
-import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
+import {createClient} from '@/utils/supabase/server';
 import {ThemeProvider} from '@/components/theme-provider';
 import {HeaderBar} from '@/components/HeaderBar';
 import {cn} from '@/lib/utils';
 import CollapsibleChat from '@/components/CollapsibleChat';
+import AuthProvider from '@/components/Auth/AuthProvider';
 
 const inter = Inter({subsets: ['latin']});
 
@@ -20,15 +19,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient({cookies: () => cookieStore});
+  const supabase = createClient();
 
   const {
     data: {session},
   } = await supabase.auth.getSession();
 
-  const accessToken = session?.access_token || null;
   const user = session?.user;
+  const accessToken = session?.access_token || null;
 
   return (
     <html lang="en" className="h-full">
