@@ -13,23 +13,20 @@ import {
 import {Badge} from '@/components/ui/badge';
 import {CalendarIcon, ArrowRightIcon} from 'lucide-react';
 import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
-import {useRouter} from 'next/navigation';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
-export default function ProjectList() {
-  const [projects, setProjects] = useState<Project[] | null>();
-  const router = useRouter();
+export default function ProjectList({
+  serverProjects,
+}: {
+  serverProjects: Project[];
+}) {
+  const [projects, setProjects] = useState(serverProjects);
   const supabase = createClientComponentClient<Database>();
 
   useEffect(() => {
-    const getProjects = async () => {
-      const res = await fetch('/api/projects');
-      const data = await res.json();
-      setProjects(data);
-    };
-    getProjects();
-  }, []);
+    setProjects(serverProjects);
+  }, [serverProjects]);
 
   useEffect(() => {
     const channel = supabase
@@ -41,8 +38,18 @@ export default function ProjectList() {
           schema: 'public',
           table: 'projects',
         },
-        () => {
-          router.refresh();
+        (payload) => {
+          setProjects((currentProjects: Project[]) => {
+            const updatedProjects = [
+              ...currentProjects,
+              payload.new as Project,
+            ];
+            return updatedProjects.sort(
+              (a, b) =>
+                new Date(b.updated_at).getTime() -
+                new Date(a.updated_at).getTime(),
+            );
+          });
         },
       )
       .subscribe();
@@ -50,7 +57,7 @@ export default function ProjectList() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, router]);
+  }, [serverProjects]);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-3 gap-6">
       {projects?.map((project) => (
