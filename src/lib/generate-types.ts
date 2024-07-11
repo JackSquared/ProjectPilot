@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const {exec} = require('child_process');
-const {config} = require('dotenv');
+const { exec } = require("child_process");
+const { config } = require("dotenv");
 
 config();
 const SUPABASE_PROJECT_ID = process.env.SUPABASE_PROJECT_ID;
-const command = `npx supabase gen types --lang=typescript --project-id "${SUPABASE_PROJECT_ID}" --schema public > ./lib/supabase.types.ts`;
+const command =
+  `npx supabase gen types --lang=typescript --local --schema public > ./lib/supabase.types.ts`;
 
 exec(command, (error: Error | null, stdout: string, stderr: string) => {
   if (error) {
