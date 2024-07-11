@@ -4,6 +4,8 @@ import {cookies} from 'next/headers';
 import {redirect} from 'next/navigation';
 import ProjectList from '../../components/ProjectList';
 
+export const revalidate = 0;
+
 export default async function Projects() {
   const cookieStore = cookies();
   const supabase = createServerComponentClient<Database>({
@@ -17,5 +19,15 @@ export default async function Projects() {
   if (!user) {
     redirect('/sign-in');
   }
-  return <ProjectList />;
+
+  const {data} = await supabase
+    .from('projects')
+    .select('*')
+    .order('updated_at', {ascending: false});
+
+  if (!data) {
+    return <div>No projects</div>;
+  }
+
+  return <ProjectList serverProjects={data} />;
 }
