@@ -9,7 +9,7 @@ export default async function SignInPage() {
   const supabase = createServerComponentClient({cookies: () => cookieStore});
   const {data} = await supabase.auth.getSession();
 
-  if (data?.session) {
+  if (data?.session?.user) {
     redirect('/');
   }
 
