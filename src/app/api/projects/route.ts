@@ -9,7 +9,10 @@ export async function GET() {
     cookies: () => cookieStore,
   });
   await supabase.auth.getSession();
-  const {data: projects} = await supabase.from('projects').select('*');
+  const {data: projects} = await supabase
+    .from('projects')
+    .select('*')
+    .order('updated_at', {ascending: false});
 
   return NextResponse.json(projects);
 }
