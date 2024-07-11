@@ -24,4 +24,3 @@ jobs:
       - run: |
           supabase link --project-ref $PRODUCTION_PROJECT_ID
           supabase db push
-    # deploy functions here
