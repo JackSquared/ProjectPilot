@@ -3,9 +3,10 @@ import {Inter} from 'next/font/google';
 import AuthProvider from '@/components/Auth/AuthProvider';
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import {cookies} from 'next/headers';
-import Chat from '@/components/Chat';
 import {ThemeProvider} from '@/components/theme-provider';
 import {HeaderBar} from '@/components/HeaderBar';
+import {cn} from '@/lib/utils';
+import CollapsibleChat from '@/components/CollapsibleChat';
 
 const inter = Inter({subsets: ['latin']});
 
@@ -30,8 +31,8 @@ export default async function RootLayout({
   const user = session?.user;
 
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className="h-full">
+      <body className={cn(inter.className, 'h-full')}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -39,17 +40,39 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider accessToken={accessToken}>
-            <div className="px-2 py-8">
+            <div className="flex flex-col h-full">
               <HeaderBar user={user} />
-              <div className="flex flex-col md:flex-row gap-8 mt-8">
-                <main className="">{children}</main>
-
-                <aside className="">{user ? <Chat /> : null}</aside>
+              <div className="flex flex-grow overflow-hidden">
+                <main className="flex-grow overflow-auto p-8 scrollbar-hide">
+                  {children}
+                </main>
+                {user && <CollapsibleChat />}
               </div>
             </div>
           </AuthProvider>
         </ThemeProvider>
+        <style>{`
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
       </body>
     </html>
   );
 }
+
+const styles = `
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+`;
+
+<style>{styles}</style>;

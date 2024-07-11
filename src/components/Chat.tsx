@@ -25,7 +25,7 @@ export default function Chat() {
   });
 
   return (
-    <Card className="h-[calc(80vh-2rem)] w-[calc(40vw-2rem)] flex flex-col">
+    <Card className="w-full h-full flex flex-col">
       <CardHeader>
         <CardTitle>Project Assistant</CardTitle>
       </CardHeader>

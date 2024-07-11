@@ -29,7 +29,7 @@ export default function Project({projectId}: {projectId: string}) {
 
   const showProject = (project: Project) => {
     return (
-      <Card className="flex flex-col items-center justify-start h-[calc(80vh-2rem)] p-6">
+      <Card className="flex flex-col items-center justify-start p-6 h-full">
         <div className="flex flex-col items-center mb-8">
           <CardTitle className="mb-4">{project.name}</CardTitle>
           <Avatar className="mb-4">
@@ -44,5 +44,5 @@ export default function Project({projectId}: {projectId: string}) {
     );
   };
 
-  return project ? <div className="card">{showProject(project)}</div> : <></>;
+  return project ? <div className="h-full">{showProject(project)}</div> : <></>;
 }
