@@ -1,0 +1,23 @@
+name: 'Check Database Types'
+on:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase db start
+      - name: Verify generated types match Postgres schema
+        run: |
+          supabase gen types --lang=typescript --local > schema.gen.ts
+          if ! git diff --ignore-space-at-eol --exit-code --quiet schema.gen.ts; then
+            echo "Detected uncommitted changes after build."
+            echo "Run supabase db reset then cd src && pnpm generate:types and then commit and push any changes made."
+            echo "See status below:"
+            git diff
+            exit 1
+          fi
