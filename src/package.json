@@ -9,7 +9,7 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --write .",
-    "generate:types": "npx ts-node lib/generate-types.ts"
+    "generate:types": "supabase gen types typescript --local --schema public > lib/supabase.types.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.0.4",
