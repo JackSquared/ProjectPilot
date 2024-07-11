@@ -29,15 +29,17 @@ export default function Project({projectId}: {projectId: string}) {
 
   const showProject = (project: Project) => {
     return (
-      <Card>
-        <CardTitle>{project.name}</CardTitle>
-        <Avatar>
-          <AvatarImage src={projectIcon ? projectIcon : ''} />
-          <AvatarFallback>{project.name.at(0)}</AvatarFallback>
-        </Avatar>
+      <Card className="flex flex-col items-center justify-start h-[calc(80vh-2rem)] p-6">
+        <div className="flex flex-col items-center mb-8">
+          <CardTitle className="mb-4">{project.name}</CardTitle>
+          <Avatar className="mb-4">
+            <AvatarImage src={projectIcon ? projectIcon : ''} />
+            <AvatarFallback>{project.name.at(0)}</AvatarFallback>
+          </Avatar>
+          <Button onClick={generateImage}>Generate project image</Button>
+        </div>
 
         <p>{project.description}</p>
-        <Button onClick={generateImage}>Generate project image</Button>
       </Card>
     );
   };
