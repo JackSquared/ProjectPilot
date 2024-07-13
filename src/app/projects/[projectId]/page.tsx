@@ -32,5 +32,5 @@ export default async function ProjectPage({
     return <div>Project not found</div>;
   }
 
-  return <Project project={project} projectId={params.projectId} />;
+  return <Project project={project} />;
 }
