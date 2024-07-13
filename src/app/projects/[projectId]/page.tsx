@@ -22,5 +22,15 @@ export default async function ProjectPage({
     redirect('/sign-in');
   }
 
-  return <Project projectId={params.projectId} />;
+  const {data: project} = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', params.projectId)
+    .single();
+
+  if (!project) {
+    return <div>Project not found</div>;
+  }
+
+  return <Project project={project} projectId={params.projectId} />;
 }
