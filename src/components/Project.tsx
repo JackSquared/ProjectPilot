@@ -1,48 +1,74 @@
 'use client';
 
+import {useState} from 'react';
 import {Database} from '@/lib/supabase.types';
-import {useEffect, useState} from 'react';
 import {Card, CardTitle} from '@/components/ui/card';
-import {Button} from './ui/button';
-import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import ProjectIcon from './ProjectIcon';
+import {generateProjectIcon} from '@/app/actions/generateProjectIcon';
+import {Input} from '@/components/ui/input';
+import {Textarea} from '@/components/ui/textarea';
+import {Pencil, Save} from 'lucide-react';
+import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
-export default function Project({projectId}: {projectId: string}) {
-  const [project, setProject] = useState<Project | null>();
-  const [projectIcon, setProjectIcon] = useState<string | null>();
+export default function Project({project: serverProject}: {project: Project}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [project, setProject] = useState(serverProject);
 
-  const generateImage = async () => {
-    const res = await fetch(`/api/projects/${projectId}/generate-image`);
-    const data = await res.json();
-    setProjectIcon(data);
+  const supabase = createClientComponentClient<Database>();
+
+  const handleSave = async () => {
+    const {error} = await supabase.from('projects').upsert(project);
+    if (error) {
+      console.error(error);
+    }
+    setIsEditing(false);
   };
 
-  useEffect(() => {
-    const getProjects = async () => {
-      const res = await fetch(`/api/projects/${projectId}`);
-      const data = await res.json();
-      setProject(data);
-    };
-    getProjects();
-  }, []);
-
-  const showProject = (project: Project) => {
-    return (
-      <Card className="flex flex-col items-center justify-start p-6 h-full">
+  return (
+    <Card className="flex flex-col items-center justify-start p-6 h-full">
+      <>
         <div className="flex flex-col items-center mb-8">
-          <CardTitle className="mb-4">{project.name}</CardTitle>
-          <Avatar className="mb-4">
-            <AvatarImage src={projectIcon ? projectIcon : ''} />
-            <AvatarFallback>{project.name.at(0)}</AvatarFallback>
-          </Avatar>
-          <Button onClick={generateImage}>Generate project image</Button>
+          <CardTitle className="mb-4">
+            {isEditing ? (
+              <Input
+                value={project.name}
+                onChange={(e) => setProject({...project, name: e.target.value})}
+                className="text-center"
+              />
+            ) : (
+              project.name
+            )}
+          </CardTitle>
+          <ProjectIcon
+            projectId={project.id}
+            projectName={project.name}
+            generateProjectIcon={generateProjectIcon}
+          />
         </div>
-
-        <p>{project.description}</p>
-      </Card>
-    );
-  };
-
-  return project ? <div className="h-full">{showProject(project)}</div> : <></>;
+        {isEditing ? (
+          <Textarea
+            value={project.description || ''}
+            onChange={(e) =>
+              setProject({...project, description: e.target.value})
+            }
+            className="mb-4"
+          />
+        ) : (
+          <p>{project.description}</p>
+        )}
+        {isEditing ? (
+          <Save className="w-4 h-4 mr-2 cursor-pointer" onClick={handleSave} />
+        ) : (
+          <div className="mt-4">
+            <Pencil
+              className="w-4 h-4 mr-2 cursor-pointer"
+              onClick={() => setIsEditing(true)}
+            />
+          </div>
+        )}
+      </>
+    </Card>
+  );
 }
