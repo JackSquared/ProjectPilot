@@ -8,6 +8,7 @@ import {
   CardTitle,
   CardHeader,
 } from '@/components/ui/card';
+import UpdateOpenAIKey from '@/components/Auth/UpdateOpenAIKey';
 
 import SignOut from '@/components/Auth/SignOut';
 
@@ -34,6 +35,10 @@ export default async function Profile() {
         <code className="highlight">
           {new Date(user.last_sign_in_at || Date.now()).toUTCString()}
         </code>
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold">OpenAI API Key</h3>
+          <UpdateOpenAIKey userId={user.id} />
+        </div>
       </CardContent>
       <CardFooter className="flex justify-between">
         <SignOut />
