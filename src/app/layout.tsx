@@ -42,8 +42,8 @@ export default async function RootLayout({
           <AuthProvider accessToken={accessToken}>
             <div className="flex flex-col h-full">
               <HeaderBar user={user} />
-              <div className="flex flex-grow overflow-hidden">
-                <main className="flex-grow overflow-auto p-8 scrollbar-hide">
+              <div className="flex flex-col md:flex-row flex-grow overflow-hidden">
+                <main className="flex-grow overflow-auto p-4 md:p-8 scrollbar-hide">
                   {children}
                 </main>
                 {user && <CollapsibleChat />}
@@ -64,15 +64,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
-const styles = `
-  .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
-  }
-`;
-
-<style>{styles}</style>;

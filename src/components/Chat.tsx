@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import {useChat} from 'ai/react';
 import {
   Card,
@@ -24,13 +24,35 @@ export default function Chat() {
     initialMessages: [{role: 'assistant', id: '0', content: openingMessage}],
   });
 
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateMaxWidth = () => {
+      if (cardRef.current) {
+        const cardWidth = cardRef.current.offsetWidth;
+        cardRef.current.style.setProperty(
+          '--message-max-width',
+          `${cardWidth * 3}px`,
+        );
+      }
+    };
+
+    updateMaxWidth();
+    window.addEventListener('resize', updateMaxWidth);
+
+    return () => window.removeEventListener('resize', updateMaxWidth);
+  }, []);
+
   return (
-    <Card className="w-full h-full flex flex-col">
+    <Card
+      ref={cardRef}
+      className="w-full h-full rounded-t-lg rounded-b-none flex flex-col"
+    >
       <CardHeader>
-        <CardTitle>Project Assistant</CardTitle>
+        <CardTitle>Pilot</CardTitle>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden">
-        <ScrollArea className="h-full pr-4">
+        <ScrollArea className="h-[calc(100%-60px)] pr-4">
           {messages.map((m) => (
             <div
               key={m.id}
@@ -41,9 +63,9 @@ export default function Chat() {
               <div
                 className={`flex ${
                   m.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                } items-start`}
+                } items-start max-w-[var(--message-max-width)]`}
               >
-                <Avatar className="w-8 h-8">
+                <Avatar className="w-8 h-8 flex-shrink-0">
                   <AvatarFallback>
                     {m.role === 'user' ? 'U' : 'AI'}
                   </AvatarFallback>
@@ -53,7 +75,7 @@ export default function Chat() {
                     m.role === 'user'
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-secondary'
-                  }`}
+                  } break-words`}
                 >
                   {m.content}
                 </div>
