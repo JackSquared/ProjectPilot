@@ -68,9 +68,8 @@ export default function Chat() {
                     }`}
                   >
                     <Markdown
-                      children={m.content}
                       components={{
-                        code({node, className, children, ...props}) {
+                        code({className, children, ...props}) {
                           const match = /language-(\w+)/.exec(className || '');
                           const codeString = String(children).replace(
                             /\n$/,
@@ -79,12 +78,14 @@ export default function Chat() {
                           return match ? (
                             <div className="relative">
                               <SyntaxHighlighter
+                                // @ts-expect-error: Ignore type mismatch on style prop
                                 style={vscDarkPlus}
                                 language={match[1]}
                                 PreTag="div"
-                                children={codeString}
                                 {...props}
-                              />
+                              >
+                                {codeString}
+                              </SyntaxHighlighter>
                               <Copy
                                 className="absolute top-2 right-2 cursor-pointer"
                                 onClick={() =>
@@ -99,7 +100,9 @@ export default function Chat() {
                           );
                         },
                       }}
-                    />
+                    >
+                      {m.content}
+                    </Markdown>
                   </div>
                 </div>
               )}
