@@ -16,11 +16,10 @@ const SignUpSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
   password: Yup.string().required('Required'),
 });
-console.log(process?.env?.VERCEL_ENV);
 
 const redirectHost =
   process?.env?.NEXT_PUBLIC_VERCEL_ENV === 'production'
-    ? process?.env?.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+    ? 'https://' + process?.env?.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
     : 'http://localhost:3000';
 
 const SignUp = () => {
