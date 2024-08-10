@@ -7,10 +7,10 @@ import {Field, Form, Formik} from 'formik';
 import Link from 'next/link';
 import * as Yup from 'yup';
 
-import {FormData} from '@/lib/types';
+import {SignUpFormData} from '@/lib/types';
 import {Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
 
-type ResetPasswordFormData = Pick<FormData, 'email'>;
+type ResetPasswordFormData = Pick<SignUpFormData, 'email'>;
 
 const ResetPasswordSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),

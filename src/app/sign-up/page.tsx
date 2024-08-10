@@ -1,7 +1,6 @@
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
 import {cookies} from 'next/headers';
 import {redirect} from 'next/navigation';
-
 import SignUp from '@/components/Auth/SignUp';
 
 export default async function SignUpPage() {

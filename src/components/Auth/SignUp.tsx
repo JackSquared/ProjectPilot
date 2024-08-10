@@ -7,7 +7,7 @@ import {Field, Form, Formik} from 'formik';
 import Link from 'next/link';
 import * as Yup from 'yup';
 
-import {FormData} from '@/lib/types';
+import {SignUpFormData} from '@/lib/types';
 import {Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
 
 const SignUpSchema = Yup.object().shape({
@@ -28,7 +28,7 @@ const SignUp = () => {
   const [errorMsg, setErrorMsg] = useState<null | string>(null);
   const [successMsg, setSuccessMsg] = useState<null | string>(null);
 
-  async function signUp(formData: FormData) {
+  async function signUp(formData: SignUpFormData) {
     const {error} = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
