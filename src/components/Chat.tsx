@@ -17,6 +17,7 @@ import Markdown from 'react-markdown';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {Copy} from 'lucide-react';
+import {User} from '@supabase/supabase-js';
 
 const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
 When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.`;
@@ -26,7 +27,7 @@ Let's have a conversation about your idea so that I can get on the same page as 
 I will assume you are starting from a fresh idea so it is best for you to start with a high level concept for your idea.
 However, if you have already made decisions about implementation then feel free to give me those details.`;
 
-export default function Chat() {
+export default function Chat({user}: {user: User}) {
   const {messages, input, handleInputChange, handleSubmit} = useChat({
     initialMessages: [
       {role: 'system', id: '0', content: systemMessage},
@@ -55,7 +56,8 @@ export default function Chat() {
                   <div className="flex flex-row items-center bg-[#005246] rounded-lg p-2">
                     <Avatar className="w-8 h-8 mr-2">
                       <AvatarFallback className="bg-[#EC9C5D] text-black font-bold">
-                        U
+                        {user?.user_metadata?.['first_name'][0]}
+                        {user?.user_metadata?.['last_name'][0]}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-grow pr-4">
