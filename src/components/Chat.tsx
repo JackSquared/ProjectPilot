@@ -13,6 +13,13 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {Avatar, AvatarFallback} from '@/components/ui/avatar';
+import Markdown from 'react-markdown';
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {Copy} from 'lucide-react';
+
+const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
+When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.`;
 
 const openingMessage = `Hello! I am ProjectPilot, an AI that empowers people to build their ideas.
 Let's have a conversation about your idea so that I can get on the same page as you and then we can discuss how we can make it a reality.
@@ -21,7 +28,10 @@ However, if you have already made decisions about implementation then feel free 
 
 export default function Chat() {
   const {messages, input, handleInputChange, handleSubmit} = useChat({
-    initialMessages: [{role: 'assistant', id: '0', content: openingMessage}],
+    initialMessages: [
+      {role: 'system', id: '0', content: systemMessage},
+      {role: 'assistant', id: '1', content: openingMessage},
+    ],
   });
 
   return (
@@ -38,26 +48,64 @@ export default function Chat() {
                 m.role === 'user' ? 'justify-end' : 'justify-start'
               } mb-4`}
             >
-              <div
-                className={`flex ${
-                  m.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                } items-start`}
-              >
-                <Avatar className="w-8 h-8">
-                  <AvatarFallback>
-                    {m.role === 'user' ? 'U' : 'AI'}
-                  </AvatarFallback>
-                </Avatar>
+              {m.role !== 'system' && (
                 <div
-                  className={`mx-2 p-3 rounded-lg ${
-                    m.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary'
-                  }`}
+                  className={`flex ${
+                    m.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+                  } items-start`}
                 >
-                  {m.content}
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback>
+                      {m.role === 'user' ? 'U' : 'AI'}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div
+                    className={`mx-2 p-3 rounded-lg ${
+                      m.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary'
+                    }`}
+                  >
+                    <Markdown
+                      components={{
+                        code({className, children, ...props}) {
+                          const match = /language-(\w+)/.exec(className || '');
+                          const codeString = String(children).replace(
+                            /\n$/,
+                            '',
+                          );
+                          return match ? (
+                            <div className="relative">
+                              <SyntaxHighlighter
+                                // @ts-expect-error: Ignore type mismatch on style prop
+                                style={vscDarkPlus}
+                                language={match[1]}
+                                PreTag="div"
+                                {...props}
+                              >
+                                {codeString}
+                              </SyntaxHighlighter>
+                              <Copy
+                                className="absolute top-2 right-2 cursor-pointer"
+                                onClick={() =>
+                                  navigator.clipboard.writeText(codeString)
+                                }
+                              />
+                            </div>
+                          ) : (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          );
+                        },
+                      }}
+                    >
+                      {m.content}
+                    </Markdown>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ))}
         </ScrollArea>
