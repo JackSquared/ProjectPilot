@@ -11,7 +11,7 @@ export default function CollapsibleChat() {
 
   return (
     <aside
-      className={`transition-all duration-300 ease-in-out ${
+      className={`${
         isChatVisible ? 'w-[40vw]' : 'w-[40px]'
       } flex-shrink-0 overflow-hidden`}
     >
