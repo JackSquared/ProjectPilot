@@ -13,10 +13,10 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {Avatar, AvatarFallback} from '@/components/ui/avatar';
-import Markdown from 'react-markdown'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy } from 'lucide-react';
+import Markdown from 'react-markdown';
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {Copy} from 'lucide-react';
 
 const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
 When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.`;
@@ -28,7 +28,10 @@ However, if you have already made decisions about implementation then feel free 
 
 export default function Chat() {
   const {messages, input, handleInputChange, handleSubmit} = useChat({
-    initialMessages: [{role: 'system', id: '0', content: systemMessage}, {role: 'assistant', id: '1', content: openingMessage}],
+    initialMessages: [
+      {role: 'system', id: '0', content: systemMessage},
+      {role: 'assistant', id: '1', content: openingMessage},
+    ],
   });
 
   return (
@@ -46,52 +49,59 @@ export default function Chat() {
               } mb-4`}
             >
               {m.role !== 'system' && (
-              <div
-                className={`flex ${
-                  m.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                } items-start`}
-              >
-                <Avatar className="w-8 h-8">
-                  <AvatarFallback>
-                    {m.role === 'user' ? 'U' : 'AI'}
-                  </AvatarFallback>
-                </Avatar>
-                
+                <div
+                  className={`flex ${
+                    m.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+                  } items-start`}
+                >
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback>
+                      {m.role === 'user' ? 'U' : 'AI'}
+                    </AvatarFallback>
+                  </Avatar>
+
                   <div
                     className={`mx-2 p-3 rounded-lg ${
-                    m.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary'
-                  }`}
-                >
-                  <Markdown
-                    children={m.content}
-                    components={{
-                      code({node, className, children, ...props}) {
-                        const match = /language-(\w+)/.exec(className || '');
-                        const codeString = String(children).replace(/\n$/, '');
-                        return match ? (
-                          <div className="relative">
-                          <SyntaxHighlighter
-                            style={vscDarkPlus}
-                            language={match[1]}
-                            PreTag="div"
-                            children={codeString}
-                            {...props}
-                          />
-                          <Copy className="absolute top-2 right-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(codeString)}/>
-                          </div>
-                        ) : (
-                          <code className={className} {...props}>
-                            {children}
-                          </code>
-                        )
-                      }
-                    }}
-                  />
+                      m.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary'
+                    }`}
+                  >
+                    <Markdown
+                      children={m.content}
+                      components={{
+                        code({node, className, children, ...props}) {
+                          const match = /language-(\w+)/.exec(className || '');
+                          const codeString = String(children).replace(
+                            /\n$/,
+                            '',
+                          );
+                          return match ? (
+                            <div className="relative">
+                              <SyntaxHighlighter
+                                style={vscDarkPlus}
+                                language={match[1]}
+                                PreTag="div"
+                                children={codeString}
+                                {...props}
+                              />
+                              <Copy
+                                className="absolute top-2 right-2 cursor-pointer"
+                                onClick={() =>
+                                  navigator.clipboard.writeText(codeString)
+                                }
+                              />
+                            </div>
+                          ) : (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          );
+                        },
+                      }}
+                    />
                   </div>
-                
-              </div>
+                </div>
               )}
             </div>
           ))}
