@@ -11,9 +11,17 @@ import {FormData} from '@/lib/types';
 import {Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
 
 const SignUpSchema = Yup.object().shape({
+  firstName: Yup.string().required('Required'),
+  lastName: Yup.string().required('Required'),
   email: Yup.string().email('Invalid email').required('Required'),
   password: Yup.string().required('Required'),
 });
+console.log(process?.env?.VERCEL_ENV);
+
+const redirectHost =
+  process?.env?.NEXT_PUBLIC_VERCEL_ENV === 'production'
+    ? process?.env?.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+    : 'http://localhost:3000';
 
 const SignUp = () => {
   const supabase = createClientComponentClient();
@@ -24,6 +32,13 @@ const SignUp = () => {
     const {error} = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
+      options: {
+        emailRedirectTo: `${redirectHost}/sign-up/confirm`,
+        data: {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+        },
+      },
     });
 
     if (error) {
@@ -41,6 +56,8 @@ const SignUp = () => {
       <CardContent>
         <Formik
           initialValues={{
+            firstName: '',
+            lastName: '',
             email: '',
             password: '',
           }}
@@ -49,6 +66,30 @@ const SignUp = () => {
         >
           {({errors, touched}) => (
             <Form className="flex flex-col">
+              <label htmlFor="firstName">First Name</label>
+              <Field
+                className={cn('input', 'my-2', errors.firstName && 'bg-red-50')}
+                id="firstName"
+                name="firstName"
+                placeholder="Jane"
+                type="text"
+              />
+              {errors.firstName && touched.firstName ? (
+                <div className="text-red-600">{errors.firstName}</div>
+              ) : null}
+
+              <label htmlFor="lastName">Last Name</label>
+              <Field
+                className={cn('input', 'my-2', errors.lastName && 'bg-red-50')}
+                id="lastName"
+                name="lastName"
+                placeholder="Doe"
+                type="text"
+              />
+              {errors.lastName && touched.lastName ? (
+                <div className="text-red-600">{errors.lastName}</div>
+              ) : null}
+
               <label htmlFor="email">Email</label>
               <Field
                 className={cn('input', 'my-2', errors.email && 'bg-red-50')}
