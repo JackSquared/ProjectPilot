@@ -17,6 +17,8 @@ const SignUpSchema = Yup.object().shape({
   password: Yup.string().required('Required'),
 });
 
+console.log(process?.env?.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL);
+
 const redirectHost =
   process?.env?.NEXT_PUBLIC_VERCEL_ENV === 'production'
     ? 'https://' + process?.env?.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
