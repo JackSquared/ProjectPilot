@@ -16,6 +16,7 @@ import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import Markdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Copy } from 'lucide-react';
 
 const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
 When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.`;
@@ -67,15 +68,19 @@ export default function Chat() {
                     children={m.content}
                     components={{
                       code({node, className, children, ...props}) {
-                        const match = /language-(\w+)/.exec(className || '')
+                        const match = /language-(\w+)/.exec(className || '');
+                        const codeString = String(children).replace(/\n$/, '');
                         return match ? (
+                          <div className="relative">
                           <SyntaxHighlighter
                             style={vscDarkPlus}
                             language={match[1]}
                             PreTag="div"
-                            children={String(children).replace(/\n$/, '')}
+                            children={codeString}
                             {...props}
                           />
+                          <Copy className="absolute top-2 right-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(codeString)}/>
+                          </div>
                         ) : (
                           <code className={className} {...props}>
                             {children}
