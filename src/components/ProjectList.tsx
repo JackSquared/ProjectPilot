@@ -59,7 +59,7 @@ export default function ProjectList({
     };
   }, [serverProjects]);
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(500px,1fr))] gap-6">
       {projects?.map((project) => (
         <Card
           key={project.id}
