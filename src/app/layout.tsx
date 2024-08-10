@@ -46,7 +46,7 @@ export default async function RootLayout({
                 <main className="flex-grow overflow-auto p-8 scrollbar-hide">
                   {children}
                 </main>
-                {user && <CollapsibleChat />}
+                {user && <CollapsibleChat user={user} />}
               </div>
             </div>
           </AuthProvider>

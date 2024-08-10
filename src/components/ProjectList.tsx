@@ -59,37 +59,45 @@ export default function ProjectList({
     };
   }, [serverProjects]);
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-3 gap-6">
-      {projects?.map((project) => (
-        <Card
-          key={project.id}
-          className="hover:shadow-lg transition-shadow duration-300"
-        >
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold">
-              {project.name}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground line-clamp-2">
-              {project.description || 'No description available.'}
-            </p>
-            <div className="flex items-center mt-4 text-sm text-muted-foreground">
-              <CalendarIcon className="w-4 h-4 mr-2" />
-              <span>{new Date(project.created_at).toLocaleDateString()}</span>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between items-center">
-            <Badge variant="secondary">{'No status'}</Badge>
-            <Link
-              href={`/projects/${project.id}`}
-              className="inline-flex items-center text-primary hover:underline"
-            >
-              View Project <ArrowRightIcon className="w-4 h-4 ml-2" />
-            </Link>
-          </CardFooter>
-        </Card>
-      ))}
+    <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(500px,1fr))] gap-6">
+      {projects.length > 0 ? (
+        projects.map((project) => (
+          <Card
+            key={project.id}
+            className="hover:shadow-lg transition-shadow duration-300"
+          >
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold">
+                {project.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground line-clamp-2">
+                {project.description || 'No description available.'}
+              </p>
+              <div className="flex items-center mt-4 text-sm text-muted-foreground">
+                <CalendarIcon className="w-4 h-4 mr-2" />
+                <span>{new Date(project.created_at).toLocaleDateString()}</span>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between items-center">
+              <Badge variant="secondary">{'No status'}</Badge>
+              <Link
+                href={`/projects/${project.id}`}
+                className="inline-flex items-center text-primary hover:underline"
+              >
+                View Project <ArrowRightIcon className="w-4 h-4 ml-2" />
+              </Link>
+            </CardFooter>
+          </Card>
+        ))
+      ) : (
+        <div className="text-center py-10">
+          <p className="text-lg text-muted-foreground">
+            Chat with Project Pilot to create your first project.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

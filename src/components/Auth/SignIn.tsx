@@ -7,7 +7,7 @@ import {Field, Form, Formik} from 'formik';
 import Link from 'next/link';
 import * as Yup from 'yup';
 
-import {FormData} from '@/lib/types';
+import {SignInFormData} from '@/lib/types';
 import {Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 
@@ -20,7 +20,7 @@ const SignIn = () => {
   const supabase = createClientComponentClient();
   const [errorMsg, setErrorMsg] = useState<null | string>(null);
 
-  async function signIn(formData: FormData) {
+  async function signIn(formData: SignInFormData) {
     const {error} = await supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,

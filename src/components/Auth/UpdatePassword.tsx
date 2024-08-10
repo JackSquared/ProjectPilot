@@ -7,9 +7,9 @@ import {Field, Form, Formik} from 'formik';
 import {useRouter} from 'next/navigation';
 import * as Yup from 'yup';
 
-import {FormData} from '@/lib/types';
+import {SignUpFormData} from '@/lib/types';
 
-type UpdatePasswordFormData = Pick<FormData, 'password'>;
+type UpdatePasswordFormData = Pick<SignUpFormData, 'password'>;
 
 const UpdatePasswordSchema = Yup.object().shape({
   password: Yup.string().required('Required'),

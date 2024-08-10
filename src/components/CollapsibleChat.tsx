@@ -3,15 +3,16 @@
 import React, {useState} from 'react';
 import {Button} from '@/components/ui/button';
 import Chat from '@/components/Chat';
+import {User} from '@supabase/supabase-js';
 
-export default function CollapsibleChat() {
+export default function CollapsibleChat({user}: {user: User}) {
   const [isChatVisible, setIsChatVisible] = useState(true);
 
   const toggleChat = () => setIsChatVisible(!isChatVisible);
 
   return (
     <aside
-      className={`transition-all duration-300 ease-in-out ${
+      className={`${
         isChatVisible ? 'w-[40vw]' : 'w-[40px]'
       } flex-shrink-0 overflow-hidden`}
     >
@@ -24,7 +25,7 @@ export default function CollapsibleChat() {
             isChatVisible ? '' : 'hidden'
           }`}
         >
-          <Chat />
+          <Chat user={user} />
         </div>
       </div>
     </aside>
