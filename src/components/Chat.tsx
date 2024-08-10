@@ -41,32 +41,64 @@ export default function Chat() {
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden">
         <ScrollArea className="h-full pr-4">
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={`flex ${
-                m.role === 'user' ? 'justify-end' : 'justify-start'
-              } mb-4`}
-            >
-              {m.role !== 'system' && (
-                <div
-                  className={`flex ${
-                    m.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                  } items-start`}
-                >
-                  <Avatar className="w-8 h-8">
-                    <AvatarFallback>
-                      {m.role === 'user' ? 'U' : 'AI'}
-                    </AvatarFallback>
-                  </Avatar>
+          {messages.map((m) => {
+            if (m.role === 'system') return null;
 
-                  <div
-                    className={`mx-2 p-3 rounded-lg ${
-                      m.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-secondary'
-                    }`}
-                  >
+            return (
+              <div
+                key={m.id}
+                className={`flex ${
+                  m.role === 'user' ? 'justify-start' : 'justify-center'
+                } mb-4`}
+              >
+                {m.role === 'user' ? (
+                  <div className="flex flex-row items-start">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback>U</AvatarFallback>
+                    </Avatar>
+                    <div className="mx-2 p-3 rounded-lg bg-primary text-primary-foreground flex-grow">
+                      <Markdown
+                        components={{
+                          code({className, children, ...props}) {
+                            const match = /language-(\w+)/.exec(
+                              className || '',
+                            );
+                            const codeString = String(children).replace(
+                              /\n$/,
+                              '',
+                            );
+                            return match ? (
+                              <div className="relative">
+                                <SyntaxHighlighter
+                                  // @ts-expect-error style
+                                  style={vscDarkPlus}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  {...props}
+                                >
+                                  {codeString}
+                                </SyntaxHighlighter>
+                                <Copy
+                                  className="absolute top-2 right-2 cursor-pointer"
+                                  onClick={() =>
+                                    navigator.clipboard.writeText(codeString)
+                                  }
+                                />
+                              </div>
+                            ) : (
+                              <code className={className} {...props}>
+                                {children}
+                              </code>
+                            );
+                          },
+                        }}
+                      >
+                        {m.content}
+                      </Markdown>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-lg bg-secondary w-full">
                     <Markdown
                       components={{
                         code({className, children, ...props}) {
@@ -78,7 +110,7 @@ export default function Chat() {
                           return match ? (
                             <div className="relative">
                               <SyntaxHighlighter
-                                // @ts-expect-error: Ignore type mismatch on style prop
+                                // @ts-expect-error style
                                 style={vscDarkPlus}
                                 language={match[1]}
                                 PreTag="div"
@@ -104,10 +136,10 @@ export default function Chat() {
                       {m.content}
                     </Markdown>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
         </ScrollArea>
       </CardContent>
       <CardFooter>
