@@ -52,11 +52,13 @@ export default function Chat() {
                 } mb-4`}
               >
                 {m.role === 'user' ? (
-                  <div className="flex flex-row items-start">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback>U</AvatarFallback>
+                  <div className="flex flex-row items-center bg-[#005246] rounded-lg p-2">
+                    <Avatar className="w-8 h-8 mr-2">
+                      <AvatarFallback className="bg-[#EC9C5D] text-black font-bold">
+                        U
+                      </AvatarFallback>
                     </Avatar>
-                    <div className="mx-2 p-3 rounded-lg bg-primary text-primary-foreground flex-grow">
+                    <div className="flex-grow pr-4">
                       <Markdown
                         components={{
                           code({className, children, ...props}) {
