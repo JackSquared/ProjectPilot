@@ -33,8 +33,10 @@ const SignUp = () => {
   const supabase = createClientComponentClient();
   const [errorMsg, setErrorMsg] = useState<null | string>(null);
   const [successMsg, setSuccessMsg] = useState<null | string>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function signUp(formData: SignUpFormData) {
+    setIsLoading(true);
     const {error} = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
@@ -49,10 +51,12 @@ const SignUp = () => {
 
     if (error) {
       setErrorMsg(error.message);
+      setIsLoading(false);
     } else {
       setSuccessMsg(
         'Success! Please check your email for further instructions.',
       );
+      setIsLoading(false);
     }
   }
 
@@ -121,15 +125,19 @@ const SignUp = () => {
                 {errors.password && touched.password ? (
                   <div className="text-red-600">{errors.password}</div>
                 ) : null}
-                <Button className="button-inverse mt-4" type="submit">
-                  Submit
+                <Button
+                  className="button-inverse mt-4"
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Submitting...' : 'Submit'}
                 </Button>
               </Form>
             )}
           </Formik>
           {errorMsg && <p className="text-red-600">{errorMsg}</p>}
           {successMsg && (
-            <p className="text-black dark:text-white">{successMsg}</p>
+            <p className="mt-4 text-black dark:text-white">{successMsg}</p>
           )}
         </CardContent>
         <CardFooter>
