@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import {useChat} from 'ai/react';
 import {
   Card,
@@ -28,6 +28,7 @@ I will assume you are starting from a fresh idea so it is best for you to start 
 However, if you have already made decisions about implementation then feel free to give me those details.`;
 
 export default function Chat({user}: {user: User}) {
+  const [lastHeight, setLastHeight] = useState<number | null>(null);
   const {messages, input, handleInputChange, handleSubmit} = useChat({
     initialMessages: [
       {role: 'system', id: '0', content: systemMessage},
@@ -35,13 +36,37 @@ export default function Chat({user}: {user: User}) {
     ],
   });
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+    const {scrollTop, scrollHeight, clientHeight} = scrollElement;
+    if (scrollTop + clientHeight >= scrollHeight - 100) {
+      scrollRef.current.scrollTop = scrollHeight;
+      return;
+    }
+
+    if (!lastHeight) {
+      scrollElement.scrollTop = scrollHeight;
+    }
+  }, [messages, lastHeight]);
+
+  const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const scroll = event.target as HTMLDivElement;
+    if (scroll.scrollTop === 0 && scrollRef.current) {
+      const {scrollHeight} = scrollRef.current;
+      setLastHeight(scrollHeight);
+    }
+  };
+
   return (
     <Card className="w-full h-full flex flex-col">
       <CardHeader>
         <CardTitle>Project Assistant</CardTitle>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden">
-        <ScrollArea className="h-full pr-4">
+        <ScrollArea onScroll={onScroll} ref={scrollRef} className="h-full pr-4">
           {messages.map((m) => {
             if (m.role === 'system') return null;
 
