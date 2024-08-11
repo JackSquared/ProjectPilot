@@ -21,8 +21,11 @@ export default function CollapsibleChat({user}: {user: User}) {
     >
       <div className="h-full flex flex-col items-end pr-2 pb-2">
         {!isChatVisible && (
-          <Button onClick={toggleChat} className="mb-2 mr-2">
-            <BotMessageSquare className="w-6 h-6" />
+          <Button
+            onClick={toggleChat}
+            className="mb-2 mr-2 absolute bottom-4 right-2"
+          >
+            <BotMessageSquare className="w-6 h-6 scale-x-[-1]" />
           </Button>
         )}
         {isChatVisible && (
