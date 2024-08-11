@@ -8,7 +8,14 @@ import Link from 'next/link';
 import * as Yup from 'yup';
 
 import {SignUpFormData} from '@/lib/types';
-import {Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {Button} from '../ui/button';
 
 const SignUpSchema = Yup.object().shape({
   firstName: Yup.string().required('Required'),
@@ -50,87 +57,88 @@ const SignUp = () => {
   }
 
   return (
-    <Card>
-      <CardHeader>Create Account</CardHeader>
-      <CardContent>
-        <Formik
-          initialValues={{
-            firstName: '',
-            lastName: '',
-            email: '',
-            password: '',
-          }}
-          validationSchema={SignUpSchema}
-          onSubmit={signUp}
-        >
-          {({errors, touched}) => (
-            <Form className="flex flex-col">
-              <label htmlFor="firstName">First Name</label>
-              <Field
-                className={cn('input', 'my-2', errors.firstName && 'bg-red-50')}
-                id="firstName"
-                name="firstName"
-                placeholder="Jane"
-                type="text"
-              />
-              {errors.firstName && touched.firstName ? (
-                <div className="text-red-600">{errors.firstName}</div>
-              ) : null}
+    <div className="flex justify-center items-center">
+      <Card className="w-[350px]">
+        <CardHeader>
+          <CardTitle>Create Account</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Formik
+            initialValues={{
+              firstName: '',
+              lastName: '',
+              email: '',
+              password: '',
+            }}
+            validationSchema={SignUpSchema}
+            onSubmit={signUp}
+          >
+            {({errors, touched}) => (
+              <Form className="flex flex-col">
+                <label htmlFor="firstName">First Name</label>
+                <Field
+                  className={cn('input', 'my-2')}
+                  id="firstName"
+                  name="firstName"
+                  placeholder="Jane"
+                  type="text"
+                />
+                {errors.firstName && touched.firstName ? (
+                  <div className="text-red-600">{errors.firstName}</div>
+                ) : null}
 
-              <label htmlFor="lastName">Last Name</label>
-              <Field
-                className={cn('input', 'my-2', errors.lastName && 'bg-red-50')}
-                id="lastName"
-                name="lastName"
-                placeholder="Doe"
-                type="text"
-              />
-              {errors.lastName && touched.lastName ? (
-                <div className="text-red-600">{errors.lastName}</div>
-              ) : null}
+                <label htmlFor="lastName">Last Name</label>
+                <Field
+                  className={cn('input', 'my-2')}
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Doe"
+                  type="text"
+                />
+                {errors.lastName && touched.lastName ? (
+                  <div className="text-red-600">{errors.lastName}</div>
+                ) : null}
 
-              <label htmlFor="email">Email</label>
-              <Field
-                className={cn('input', 'my-2', errors.email && 'bg-red-50')}
-                id="email"
-                name="email"
-                placeholder="jane@acme.com"
-                type="email"
-              />
-              {errors.email && touched.email ? (
-                <div className="text-red-600">{errors.email}</div>
-              ) : null}
+                <label htmlFor="email">Email</label>
+                <Field
+                  className={cn('input', 'my-2')}
+                  id="email"
+                  name="email"
+                  placeholder="jane@acme.com"
+                  type="email"
+                />
+                {errors.email && touched.email ? (
+                  <div className="text-red-600">{errors.email}</div>
+                ) : null}
 
-              <label htmlFor="email">Password</label>
-              <Field
-                className={cn(
-                  'input',
-                  'my-2',
-                  errors.password && touched.password && 'bg-red-50',
-                )}
-                id="password"
-                name="password"
-                type="password"
-              />
-              {errors.password && touched.password ? (
-                <div className="text-red-600">{errors.password}</div>
-              ) : null}
-
-              <button className="button-inverse w-full" type="submit">
-                Submit
-              </button>
-            </Form>
+                <label htmlFor="email">Password</label>
+                <Field
+                  className={cn('input', 'my-2')}
+                  id="password"
+                  name="password"
+                  type="password"
+                />
+                {errors.password && touched.password ? (
+                  <div className="text-red-600">{errors.password}</div>
+                ) : null}
+                <Button className="button-inverse mt-4" type="submit">
+                  Submit
+                </Button>
+              </Form>
+            )}
+          </Formik>
+          {errorMsg && <p className="text-red-600">{errorMsg}</p>}
+          {successMsg && (
+            <p className="text-black dark:text-white">{successMsg}</p>
           )}
-        </Formik>
-        {errorMsg && <div className="text-red-600">{errorMsg}</div>}
-        {successMsg && <div className="text-black">{successMsg}</div>}
-      </CardContent>
-      <CardFooter>
-        <Link href="/sign-in" className="link w-full">
-          Already have an account? Sign In.
-        </Link>
-      </CardFooter>
-    </Card>
+        </CardContent>
+        <CardFooter>
+          <Link href="/sign-in" className="link w-full">
+            Already have an account? Sign In.
+          </Link>
+        </CardFooter>
+      </Card>
+    </div>
   );
 };
 
