@@ -14,8 +14,10 @@ export default function CollapsibleChat({user}: {user: User}) {
   return (
     <aside
       className={`${
-        isChatVisible ? 'w-[40vw]' : 'w-[80px]'
-      } flex-shrink-0 overflow-hidden fixed bottom-0 right-0`}
+        isChatVisible
+          ? 'w-full md:w-[60vw] xl:w-[70vw] max-w-[800px]'
+          : 'w-[80px]'
+      } h-[60vh] flex-shrink-0 overflow-hidden fixed bottom-0 right-0 `}
     >
       <div className="h-full flex flex-col items-end pr-2 pb-2">
         {!isChatVisible && (
@@ -38,7 +40,9 @@ export default function CollapsibleChat({user}: {user: User}) {
             isChatVisible ? '' : 'hidden'
           }`}
         >
-          <Chat user={user} />
+          <div className="w-full h-full">
+            <Chat user={user} />
+          </div>
         </div>
       </div>
     </aside>
