@@ -13,11 +13,11 @@ export default function CollapsibleChat({user}: {user: User}) {
   return (
     <aside
       className={`${
-        isChatVisible ? 'w-[40vw]' : 'w-[40px]'
-      } flex-shrink-0 overflow-hidden`}
+        isChatVisible ? 'w-[40vw]' : 'w-[70px]'
+      } flex-shrink-0 overflow-hidden fixed bottom-0 right-0`}
     >
-      <div className="h-full flex flex-col">
-        <Button onClick={toggleChat} className="self-start">
+      <div className="h-full flex flex-col items-end pr-2 pb-2">
+        <Button onClick={toggleChat} className="mb-2 mr-2">
           {isChatVisible ? '>' : '<'}
         </Button>
         <div
