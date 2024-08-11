@@ -83,7 +83,7 @@ export default function Chat({user}: {user: User}) {
         <ScrollArea onScroll={onScroll} ref={scrollRef} className="h-full pr-4">
           {showScrollButton && (
             <ChevronDownCircle
-              className="absolute inset-x-0 bottom-10 mx-auto w-40 z-10 hover:cursor-pointer"
+              className="absolute inset-x-0 bottom-10 mx-auto z-10 hover:cursor-pointer"
               onClick={scrollToBottom}
               size={40}
               color="black"
@@ -124,6 +124,7 @@ export default function Chat({user}: {user: User}) {
                                 <SyntaxHighlighter
                                   // @ts-expect-error style
                                   style={vscDarkPlus}
+                                  wrapLongLines
                                   language={match[1]}
                                   PreTag="div"
                                   {...props}
@@ -165,6 +166,7 @@ export default function Chat({user}: {user: User}) {
                                 // @ts-expect-error style
                                 style={vscDarkPlus}
                                 language={match[1]}
+                                wrapLongLines
                                 PreTag="div"
                                 {...props}
                               >
