@@ -2,15 +2,12 @@ import {StreamingTextResponse, OpenAIStream} from 'ai';
 import {OpenAI} from 'openai';
 import type {ChatCompletionCreateParams} from 'openai/resources/chat';
 import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
+import {createClient} from '@supabase/supabase-js';
 import {cookies} from 'next/headers';
 import {Database} from '@/lib/supabase.types';
 import {tryCreateProject} from '@/lib/projects/queries';
 
 export const runtime = 'edge';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
 
 const functions: ChatCompletionCreateParams.Function[] = [
   {
@@ -39,6 +36,22 @@ export async function POST(req: Request) {
     cookies: () => cookieStore,
   });
 
+  const {
+    data: {session},
+  } = await supabase.auth.getSession();
+
+  const supabase_service_role = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+
+  const {data: secret} = await supabase_service_role.rpc('read_secret', {
+    secret_name: `openai_api_key_${session?.user.id}`,
+  });
+
+  const openai = new OpenAI({
+    apiKey: secret,
+  });
   async function createProject(name: string, description: string) {
     try {
       const {
