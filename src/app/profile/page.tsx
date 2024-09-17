@@ -1,5 +1,4 @@
-import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
+import {createClient} from '@/lib/supabase/server';
 import {redirect} from 'next/navigation';
 import {
   Card,
@@ -12,8 +11,7 @@ import {
 import SignOut from '@/components/Auth/SignOut';
 
 export default async function Profile() {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient({cookies: () => cookieStore});
+  const supabase = createClient();
 
   const {
     data: {user},

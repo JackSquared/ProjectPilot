@@ -8,7 +8,7 @@ import {generateProjectIcon} from '@/app/actions/generateProjectIcon';
 import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
 import {Pencil, Save} from 'lucide-react';
-import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
+import {createClient} from '@/lib/supabase/client';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -16,7 +16,7 @@ export default function Project({project: serverProject}: {project: Project}) {
   const [isEditing, setIsEditing] = useState(false);
   const [project, setProject] = useState(serverProject);
 
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClient();
 
   const handleSave = async () => {
     const {error} = await supabase.from('projects').upsert(project);

@@ -1,12 +1,10 @@
-import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
 import {redirect} from 'next/navigation';
+import {createClient} from '@/lib/supabase/server';
 
 import UpdatePassword from '@/components/Auth/UpdatePassword';
 
 export default async function UpdatePasswordPage() {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient({cookies: () => cookieStore});
+  const supabase = createClient();
 
   const {
     data: {session},

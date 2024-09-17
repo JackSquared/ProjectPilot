@@ -1,16 +1,16 @@
 'use client';
 
 import {Button} from '@/components/ui/button';
-import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
 import {useSearchParams} from 'next/navigation';
 import {useState, useEffect} from 'react';
 import {User} from '@supabase/supabase-js';
 import {useRouter} from 'next/navigation';
+import {createClient} from '@/lib/supabase/client';
 
 const ConfirmSignUp = () => {
   const [user, setUser] = useState<User | undefined>();
   const searchParams = useSearchParams();
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
   const router = useRouter();
 
   useEffect(() => {

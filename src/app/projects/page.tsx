@@ -1,24 +1,10 @@
-import {Database} from '@/lib/supabase.types';
-import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
-import {redirect} from 'next/navigation';
 import ProjectList from '../../components/ProjectList';
+import {createClient} from '@/lib/supabase/server';
 
 export const revalidate = 0;
 
 export default async function Projects() {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient<Database>({
-    cookies: () => cookieStore,
-  });
-
-  const {
-    data: {user},
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/sign-in');
-  }
+  const supabase = createClient();
 
   const {data} = await supabase
     .from('projects')
