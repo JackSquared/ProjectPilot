@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import {useChat} from 'ai/react';
 import {
   Card,
@@ -19,6 +19,10 @@ import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {Copy} from 'lucide-react';
 import {User} from '@supabase/supabase-js';
 
+interface ScrollableElement extends Element {
+  scrollTimeout?: number;
+}
+
 const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
 When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.`;
 
@@ -28,6 +32,9 @@ I will assume you are starting from a fresh idea so it is best for you to start 
 However, if you have already made decisions about implementation then feel free to give me those details.`;
 
 export default function Chat({user}: {user: User}) {
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [lastHeight, setLastHeight] = useState<number | null>(null);
+
   const {messages, input, handleInputChange, handleSubmit} = useChat({
     initialMessages: [
       {role: 'system', id: '0', content: systemMessage},
@@ -35,13 +42,56 @@ export default function Chat({user}: {user: User}) {
     ],
   });
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+
+    const {scrollTop, scrollHeight, clientHeight} = scrollElement;
+    if (!lastHeight) {
+      scrollElement.scrollTop = scrollHeight;
+      return;
+    }
+
+    if (!isUserScrolling && scrollTop + clientHeight >= scrollHeight - 100) {
+      scrollElement.scrollTop = scrollHeight;
+      return;
+    }
+  }, [messages, isUserScrolling, lastHeight]);
+
+  const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const scrollElement = event.target as HTMLDivElement;
+    console.log(scrollElement.scrollTop);
+    if (scrollElement.scrollTop === 0 && scrollRef.current) {
+      const {scrollHeight} = scrollRef.current;
+      setLastHeight(scrollHeight);
+    }
+  };
+
+  const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    setIsUserScrolling(true);
+
+    // debounce
+    const target = event.currentTarget as ScrollableElement;
+    clearTimeout(target.scrollTimeout);
+    target.scrollTimeout = window.setTimeout(() => {
+      setIsUserScrolling(false);
+    }, 150);
+  };
+
   return (
     <Card className="w-full h-full flex flex-col">
       <CardHeader>
         <CardTitle>Project Assistant</CardTitle>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden">
-        <ScrollArea className="h-full pr-4">
+        <ScrollArea
+          onScroll={onScroll}
+          onWheel={onWheel}
+          ref={scrollRef}
+          className="h-full pr-4"
+        >
           {messages.map((m) => {
             if (m.role === 'system') return null;
 
@@ -76,6 +126,7 @@ export default function Chat({user}: {user: User}) {
                                 <SyntaxHighlighter
                                   // @ts-expect-error style
                                   style={vscDarkPlus}
+                                  wrapLongLines
                                   language={match[1]}
                                   PreTag="div"
                                   {...props}
@@ -117,6 +168,7 @@ export default function Chat({user}: {user: User}) {
                                 // @ts-expect-error style
                                 style={vscDarkPlus}
                                 language={match[1]}
+                                wrapLongLines
                                 PreTag="div"
                                 {...props}
                               >
