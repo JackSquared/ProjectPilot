@@ -16,7 +16,7 @@ import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import Markdown from 'react-markdown';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
-import {Copy, ChevronDownCircle} from 'lucide-react';
+import {Copy} from 'lucide-react';
 import {User} from '@supabase/supabase-js';
 
 const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
@@ -28,8 +28,9 @@ I will assume you are starting from a fresh idea so it is best for you to start 
 However, if you have already made decisions about implementation then feel free to give me those details.`;
 
 export default function Chat({user}: {user: User}) {
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [lastHeight, setLastHeight] = useState<number | null>(null);
-  const [showScrollButton, setShowScrollButton] = useState(false);
+
   const {messages, input, handleInputChange, handleSubmit} = useChat({
     initialMessages: [
       {role: 'system', id: '0', content: systemMessage},
@@ -44,34 +45,34 @@ export default function Chat({user}: {user: User}) {
     if (!scrollElement) return;
 
     const {scrollTop, scrollHeight, clientHeight} = scrollElement;
-    if (scrollTop + clientHeight >= scrollHeight - 100) {
-      scrollRef.current.scrollTop = scrollHeight;
+    if (!lastHeight) {
+      scrollElement.scrollTop = scrollHeight;
       return;
     }
 
-    if (!lastHeight) {
+    if (!isUserScrolling && scrollTop + clientHeight >= scrollHeight - 100) {
       scrollElement.scrollTop = scrollHeight;
+      return;
     }
-  }, [messages, lastHeight]);
-
-  const scrollToBottom = () => {
-    const scrollElement = scrollRef.current;
-    if (scrollElement) {
-      scrollElement.scrollTop = scrollElement.scrollHeight;
-    }
-  };
+  }, [messages, isUserScrolling, lastHeight]);
 
   const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    const scroll = event.target as HTMLDivElement;
-    if (scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 500) {
-      setShowScrollButton(false);
-    } else {
-      setShowScrollButton(true);
-    }
-    if (scroll.scrollTop === 0 && scrollRef.current) {
+    const scrollElement = event.target as HTMLDivElement;
+    console.log(scrollElement.scrollTop);
+    if (scrollElement.scrollTop === 0 && scrollRef.current) {
       const {scrollHeight} = scrollRef.current;
       setLastHeight(scrollHeight);
     }
+  };
+
+  const onWheel = (event: React.UIEvent<HTMLDivElement>) => {
+    setIsUserScrolling(true);
+
+    // debounce
+    clearTimeout((event.target as any).scrollTimeout);
+    (event.target as any).scrollTimeout = setTimeout(() => {
+      setIsUserScrolling(false);
+    }, 150);
   };
 
   return (
@@ -80,16 +81,12 @@ export default function Chat({user}: {user: User}) {
         <CardTitle>Project Assistant</CardTitle>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden">
-        <ScrollArea onScroll={onScroll} ref={scrollRef} className="h-full pr-4">
-          {showScrollButton && (
-            <ChevronDownCircle
-              className="absolute inset-x-0 bottom-10 mx-auto z-10 hover:cursor-pointer"
-              onClick={scrollToBottom}
-              size={40}
-              color="black"
-              fill="white"
-            />
-          )}
+        <ScrollArea
+          onScroll={onScroll}
+          onWheel={onWheel}
+          ref={scrollRef}
+          className="h-full pr-4"
+        >
           {messages.map((m) => {
             if (m.role === 'system') return null;
 
