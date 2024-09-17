@@ -7,8 +7,8 @@ import {
   CardTitle,
   CardHeader,
 } from '@/components/ui/card';
-
-import SignOut from '@/components/Auth/SignOut';
+import {Button} from '@/components/ui/button';
+import {logout} from '../actions/auth';
 
 export default async function Profile() {
   const supabase = createClient();
@@ -34,7 +34,9 @@ export default async function Profile() {
         </code>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <SignOut />
+        <form action={logout}>
+          <Button type="submit">Logout</Button>
+        </form>
       </CardFooter>
     </Card>
   );

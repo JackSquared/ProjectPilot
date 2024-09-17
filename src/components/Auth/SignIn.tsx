@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
-import {createClient} from '@/lib/supabase/client';
+import {login} from '@/app/actions/auth';
 
 const SignInSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -23,14 +23,10 @@ const SignInSchema = Yup.object().shape({
 });
 
 const SignIn = () => {
-  const supabase = createClient();
   const [errorMsg, setErrorMsg] = useState<null | string>(null);
 
   async function signIn(formData: SignInFormData) {
-    const {error} = await supabase.auth.signInWithPassword({
-      email: formData.email,
-      password: formData.password,
-    });
+    const {error} = await login(formData.email, formData.password);
 
     if (error) {
       setErrorMsg(error.message);

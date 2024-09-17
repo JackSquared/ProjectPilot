@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import {ModeToggle} from './ModeToggle';
-import {User} from '@supabase/supabase-js';
 import {User2, Menu} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {
@@ -11,13 +10,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {Session} from '@supabase/supabase-js';
 
-export function HeaderBar({user}: {user: User | undefined}) {
+export function HeaderBar({session}: {session: Session | null}) {
   return (
     <div className="flex my-5">
       <AppMenu className="flex-1" />
       <ModeToggle className="flex-2 mx-5" />
-      {user && <UserMenu className="flex-3" />}
+      {session && <UserMenu className="flex-3" />}
     </div>
   );
 }

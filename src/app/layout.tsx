@@ -39,7 +39,7 @@ export default async function RootLayout({
         >
           <AuthProvider accessToken={accessToken}>
             <div className="flex flex-col h-full">
-              <HeaderBar user={user} />
+              <HeaderBar session={session} />
               <div className="flex flex-grow overflow-hidden">
                 <main className="flex-grow overflow-auto p-8 scrollbar-hide">
                   {children}
