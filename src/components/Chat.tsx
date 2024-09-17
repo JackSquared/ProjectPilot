@@ -19,6 +19,10 @@ import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {Copy} from 'lucide-react';
 import {User} from '@supabase/supabase-js';
 
+interface ScrollableElement extends Element {
+  scrollTimeout?: number;
+}
+
 const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
 When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.`;
 
@@ -65,12 +69,13 @@ export default function Chat({user}: {user: User}) {
     }
   };
 
-  const onWheel = (event: React.UIEvent<HTMLDivElement>) => {
+  const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     setIsUserScrolling(true);
 
     // debounce
-    clearTimeout((event.target as any).scrollTimeout);
-    (event.target as any).scrollTimeout = setTimeout(() => {
+    const target = event.currentTarget as ScrollableElement;
+    clearTimeout(target.scrollTimeout);
+    target.scrollTimeout = window.setTimeout(() => {
       setIsUserScrolling(false);
     }, 150);
   };
