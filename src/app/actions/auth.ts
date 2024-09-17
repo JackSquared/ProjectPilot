@@ -22,5 +22,5 @@ export async function login(email: string, password: string) {
     return {error: {message: error.message}};
   }
 
-  redirect('/');
+  return;
 }

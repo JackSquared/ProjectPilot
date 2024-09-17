@@ -1,6 +1,5 @@
 import './globals.css';
 import {Inter} from 'next/font/google';
-import AuthProvider from '@/components/Auth/AuthProvider';
 import {ThemeProvider} from '@/components/theme-provider';
 import {HeaderBar} from '@/components/HeaderBar';
 import {cn} from '@/lib/utils';
@@ -25,7 +24,6 @@ export default async function RootLayout({
     data: {session},
   } = await supabase.auth.getSession();
 
-  const accessToken = session?.access_token || null;
   const user = session?.user;
 
   return (
@@ -37,17 +35,15 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider accessToken={accessToken}>
-            <div className="flex flex-col h-full">
-              <HeaderBar session={session} />
-              <div className="flex flex-grow overflow-hidden">
-                <main className="flex-grow overflow-auto p-8 scrollbar-hide">
-                  {children}
-                </main>
-                {user && <CollapsibleChat user={user} />}
-              </div>
+          <div className="flex flex-col h-full">
+            <HeaderBar session={session} />
+            <div className="flex flex-grow overflow-hidden">
+              <main className="flex-grow overflow-auto p-8 scrollbar-hide">
+                {children}
+              </main>
+              {user && <CollapsibleChat user={user} />}
             </div>
-          </AuthProvider>
+          </div>
         </ThemeProvider>
         <style>{`
           .scrollbar-hide {

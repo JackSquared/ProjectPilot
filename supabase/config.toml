@@ -91,12 +91,16 @@ enable_signup = true
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
-enable_confirmations = false
+enable_confirmations = true
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.confirmation]
+subject = "Confirm your sign up email"
+content_path = "./supabase/templates/confirmSignup.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
@@ -112,8 +116,8 @@ template = "Your code is {{ .Code }} ."
 
 # This hook runs before a token is issued and allows you to add additional claims based on the authentication method used.
 [auth.hook.custom_access_token]
-# enabled = true
-# uri = "pg-functions://<database>/<schema>/<hook_name>"
+enabled = true
+uri = "pg-functions://postgres/public/set_user_role"
 
 
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
