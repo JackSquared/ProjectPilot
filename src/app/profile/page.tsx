@@ -1,5 +1,4 @@
-import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
+import {createClient} from '@/lib/supabase/server';
 import {redirect} from 'next/navigation';
 import {
   Card,
@@ -8,12 +7,11 @@ import {
   CardTitle,
   CardHeader,
 } from '@/components/ui/card';
-
-import SignOut from '@/components/Auth/SignOut';
+import {Button} from '@/components/ui/button';
+import {logout} from '../actions/auth';
 
 export default async function Profile() {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient({cookies: () => cookieStore});
+  const supabase = createClient();
 
   const {
     data: {user},
@@ -36,7 +34,9 @@ export default async function Profile() {
         </code>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <SignOut />
+        <form action={logout}>
+          <Button type="submit">Logout</Button>
+        </form>
       </CardFooter>
     </Card>
   );

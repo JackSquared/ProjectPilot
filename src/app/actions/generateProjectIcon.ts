@@ -1,12 +1,10 @@
 'use server';
 
-import {Database} from '@/lib/supabase.types';
-import {createServerActionClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
 import {OpenAI} from 'openai';
+import {createClient} from '@/lib/supabase/server';
 
 export async function generateProjectIcon(projectId: number) {
-  const supabase = createServerActionClient<Database>({cookies});
+  const supabase = createClient();
   await supabase.auth.getSession();
 
   const {data: project} = await supabase

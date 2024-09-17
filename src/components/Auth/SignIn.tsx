@@ -1,7 +1,6 @@
 'use client';
 
 import {useState} from 'react';
-import {createClientComponentClient} from '@supabase/auth-helpers-nextjs';
 import cn from 'classnames';
 import {Field, Form, Formik} from 'formik';
 import Link from 'next/link';
@@ -16,6 +15,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
+import {login} from '@/app/actions/auth';
+import {useSearchParams} from 'next/navigation';
 
 const SignInSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -23,17 +24,17 @@ const SignInSchema = Yup.object().shape({
 });
 
 const SignIn = () => {
-  const supabase = createClientComponentClient();
   const [errorMsg, setErrorMsg] = useState<null | string>(null);
+  const searchParams = useSearchParams();
 
+  const next = searchParams.get('next');
   async function signIn(formData: SignInFormData) {
-    const {error} = await supabase.auth.signInWithPassword({
-      email: formData.email,
-      password: formData.password,
-    });
+    const result = await login(formData.email, formData.password);
 
-    if (error) {
-      setErrorMsg(error.message);
+    if (result && result.error) {
+      setErrorMsg(result.error.message);
+    } else {
+      window.location.href = next || '/';
     }
   }
 

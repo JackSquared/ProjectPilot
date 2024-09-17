@@ -1,9 +1,7 @@
 import {StreamingTextResponse, OpenAIStream} from 'ai';
 import {OpenAI} from 'openai';
 import type {ChatCompletionCreateParams} from 'openai/resources/chat';
-import {createServerComponentClient} from '@supabase/auth-helpers-nextjs';
-import {cookies} from 'next/headers';
-import {Database} from '@/lib/supabase.types';
+import {createClient} from '@/lib/supabase/server';
 import {tryCreateProject} from '@/lib/projects/queries';
 
 export const runtime = 'edge';
@@ -34,10 +32,7 @@ const functions: ChatCompletionCreateParams.Function[] = [
 ];
 
 export async function POST(req: Request) {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient<Database>({
-    cookies: () => cookieStore,
-  });
+  const supabase = createClient();
 
   async function createProject(name: string, description: string) {
     try {
