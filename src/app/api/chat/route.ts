@@ -52,12 +52,25 @@ export async function POST(req: Request) {
 
   const {messages} = await req.json();
 
+  const systemMessage = `
+  You are ProjectPilot, an AI that empowers people to build their ideas.
+  You will chat with the user about their idea so that you can help them understand their objectives and learn about what the project.
+  Once you have determined a suitable name and description for the project create it and inform the user.
+  `
+
+  messages.unshift({
+    role: "system",
+    content: systemMessage
+  })
+
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
     stream: true,
     messages,
     functions,
   });
+
+  console.log(messages);
 
   const stream = OpenAIStream(response, {
     onCompletion: async (completion: string) => {
