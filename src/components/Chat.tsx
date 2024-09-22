@@ -18,7 +18,8 @@ import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {Copy} from 'lucide-react';
 import {User} from '@supabase/supabase-js';
-
+import {useRouter} from 'next/navigation';
+import {ToolInvocation} from 'ai';
 interface ScrollableElement extends Element {
   scrollTimeout?: number;
 }
@@ -32,6 +33,7 @@ I will assume you are starting from a fresh idea so it is best for you to start 
 However, if you have already made decisions about implementation then feel free to give me those details.`;
 
 export default function Chat({user}: {user: User}) {
+  const router = useRouter();
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [lastHeight, setLastHeight] = useState<number | null>(null);
 
@@ -41,6 +43,13 @@ export default function Chat({user}: {user: User}) {
       {role: 'system', id: '0', content: systemMessage},
       {role: 'assistant', id: '1', content: openingMessage},
     ],
+    async onToolCall({toolCall}) {
+      if (toolCall.toolName === 'openProject') {
+        const {id} = toolCall.args as {id: string};
+        router.push(`/projects/${id}`);
+        return 'Project opened';
+      }
+    },
   });
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -94,7 +103,7 @@ export default function Chat({user}: {user: User}) {
         >
           {messages.map((m) => {
             if (m.role === 'system') return null;
-            if (m.content === '') return null;
+
             return (
               <div
                 key={m.id}
@@ -153,45 +162,68 @@ export default function Chat({user}: {user: User}) {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-3 rounded-lg bg-secondary w-full">
-                    <Markdown
-                      components={{
-                        code({className, children, ...props}) {
-                          const match = /language-(\w+)/.exec(className || '');
-                          const codeString = String(children).replace(
-                            /\n$/,
-                            '',
-                          );
-                          return match ? (
-                            <div className="relative">
-                              <SyntaxHighlighter
-                                // @ts-expect-error style
-                                style={vscDarkPlus}
-                                language={match[1]}
-                                wrapLongLines
-                                PreTag="div"
-                                {...props}
-                              >
-                                {codeString}
-                              </SyntaxHighlighter>
-                              <Copy
-                                className="absolute top-2 right-2 cursor-pointer"
-                                onClick={() =>
-                                  navigator.clipboard.writeText(codeString)
-                                }
-                              />
+                  <>
+                    {m.toolInvocations?.map(
+                      (toolInvocation: ToolInvocation) => {
+                        if (toolInvocation.toolName === 'openProject') {
+                          return (
+                            <div
+                              className="p-3 rounded-lg text-center bg-primary w-full"
+                              key={toolInvocation.toolCallId}
+                            >
+                              {'result' in toolInvocation && (
+                                <b>{toolInvocation.result}</b>
+                              )}
                             </div>
-                          ) : (
-                            <code className={className} {...props}>
-                              {children}
-                            </code>
                           );
-                        },
-                      }}
-                    >
-                      {m.content}
-                    </Markdown>
-                  </div>
+                        }
+                        return null;
+                      },
+                    )}
+                    {!m.toolInvocations && (
+                      <div className="p-3 rounded-lg bg-secondary w-full">
+                        <Markdown
+                          components={{
+                            code({className, children, ...props}) {
+                              const match = /language-(\w+)/.exec(
+                                className || '',
+                              );
+                              const codeString = String(children).replace(
+                                /\n$/,
+                                '',
+                              );
+                              return match ? (
+                                <div className="relative">
+                                  <SyntaxHighlighter
+                                    // @ts-expect-error style
+                                    style={vscDarkPlus}
+                                    language={match[1]}
+                                    wrapLongLines
+                                    PreTag="div"
+                                    {...props}
+                                  >
+                                    {codeString}
+                                  </SyntaxHighlighter>
+                                  <Copy
+                                    className="absolute top-2 right-2 cursor-pointer"
+                                    onClick={() =>
+                                      navigator.clipboard.writeText(codeString)
+                                    }
+                                  />
+                                </div>
+                              ) : (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              );
+                            },
+                          }}
+                        >
+                          {m.content}
+                        </Markdown>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             );

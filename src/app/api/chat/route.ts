@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     messages: convertToCoreMessages(messages),
     tools: {
       createProject: {
-        description: 'Create a new project',
+        description: 'Create a new project.',
         parameters: z.object({
           name: z.string().describe('The name of the new project'),
           description: z
@@ -47,8 +47,15 @@ export async function POST(req: Request) {
           name: string;
           description: string;
         }) => {
-          return JSON.stringify(await createProject(name, description));
+          const project = await createProject(name, description);
+          return project?.id;
         },
+      },
+      openProject: {
+        description: 'Open a project. Always open a project after creating it.',
+        parameters: z.object({
+          id: z.string().describe('The id of the project to open'),
+        }),
       },
     },
   });

@@ -32,5 +32,5 @@ export async function tryCreateProject(
     .insert([{name, description, user_id: user_id}])
     .select();
 
-  return data;
+  return data?.[0];
 }
