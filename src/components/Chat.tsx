@@ -36,6 +36,7 @@ export default function Chat({user}: {user: User}) {
   const [lastHeight, setLastHeight] = useState<number | null>(null);
 
   const {messages, input, handleInputChange, handleSubmit} = useChat({
+    maxSteps: 5,
     initialMessages: [
       {role: 'system', id: '0', content: systemMessage},
       {role: 'assistant', id: '1', content: openingMessage},
@@ -62,7 +63,6 @@ export default function Chat({user}: {user: User}) {
 
   const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const scrollElement = event.target as HTMLDivElement;
-    console.log(scrollElement.scrollTop);
     if (scrollElement.scrollTop === 0 && scrollRef.current) {
       const {scrollHeight} = scrollRef.current;
       setLastHeight(scrollHeight);
@@ -94,7 +94,7 @@ export default function Chat({user}: {user: User}) {
         >
           {messages.map((m) => {
             if (m.role === 'system') return null;
-
+            if (m.content === '') return null;
             return (
               <div
                 key={m.id}

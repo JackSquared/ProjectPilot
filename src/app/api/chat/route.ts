@@ -1,35 +1,11 @@
-import {StreamingTextResponse, OpenAIStream} from 'ai';
-import {OpenAI} from 'openai';
-import type {ChatCompletionCreateParams} from 'openai/resources/chat';
+import {openai} from '@ai-sdk/openai';
+import {convertToCoreMessages, streamText} from 'ai';
+import {z} from 'zod';
 import {createClient} from '@/lib/supabase/server';
 import {tryCreateProject} from '@/lib/projects/queries';
 
+export const maxDuration = 30;
 export const runtime = 'edge';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-
-const functions: ChatCompletionCreateParams.Function[] = [
-  {
-    name: 'create_project',
-    description: 'Create a new project',
-    parameters: {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
-          description: 'The name of the new project',
-        },
-        description: {
-          type: 'string',
-          description: 'The description of the new project',
-        },
-      },
-      required: ['name', 'description'],
-    },
-  },
-];
 
 export async function POST(req: Request) {
   const supabase = createClient();
@@ -52,38 +28,30 @@ export async function POST(req: Request) {
 
   const {messages} = await req.json();
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    stream: true,
-    messages,
-    functions,
-  });
-
-  const stream = OpenAIStream(response, {
-    onCompletion: async (completion: string) => {
-      console.log(completion);
-    },
-    experimental_onFunctionCall: async (
-      {name, arguments: args},
-      createFunctionCallMessages,
-    ) => {
-      if (name === 'create_project') {
-        const projectData = await createProject(
-          args.name as string,
-          args.description as string,
-        );
-        const newMessages = createFunctionCallMessages(
-          projectData ? projectData[0] : null,
-        );
-        return openai.chat.completions.create({
-          messages: [...messages, ...newMessages],
-          stream: true,
-          model: 'gpt-3.5-turbo-0613',
-          functions,
-        });
-      }
+  const result = await streamText({
+    model: openai('gpt-4o-mini'),
+    messages: convertToCoreMessages(messages),
+    tools: {
+      createProject: {
+        description: 'Create a new project',
+        parameters: z.object({
+          name: z.string().describe('The name of the new project'),
+          description: z
+            .string()
+            .describe('The description of the new project'),
+        }),
+        execute: async ({
+          name,
+          description,
+        }: {
+          name: string;
+          description: string;
+        }) => {
+          return JSON.stringify(await createProject(name, description));
+        },
+      },
     },
   });
 
-  return new StreamingTextResponse(stream);
+  return result.toDataStreamResponse();
 }

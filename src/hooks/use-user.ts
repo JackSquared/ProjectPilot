@@ -27,8 +27,6 @@ export function useUser() {
           error,
         } = await supabase.auth.getSession();
         if (error) throw error;
-        console.log('session');
-        console.log('session', session);
         if (session) {
           setSession(session);
           setUser(session.user);

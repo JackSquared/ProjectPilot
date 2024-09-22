@@ -30,9 +30,7 @@ export async function getUserRole() {
       const secret = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET);
       const {payload} = await jwtVerify<SupabaseJwtPayload>(token, secret);
 
-      console.log(payload);
       role = payload.app_metadata.role;
-      console.log('User role:', role);
     } catch (error) {
       console.error('Failed to verify token:', error);
     }
