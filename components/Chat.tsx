@@ -38,6 +38,8 @@ export default function Chat({user}: {user: User}) {
   const [lastHeight, setLastHeight] = useState<number | null>(null);
 
   const {messages, input, handleInputChange, handleSubmit} = useChat({
+    api: '/api/chat?protocol=text',
+    streamProtocol: 'text',
     maxSteps: 5,
     initialMessages: [
       {role: 'system', id: '0', content: systemMessage},
