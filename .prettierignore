@@ -1,2 +1,2 @@
-src/lib/supabase.types.ts
-src/components/ui/*
+lib/supabase.types.ts
+components/ui/*
