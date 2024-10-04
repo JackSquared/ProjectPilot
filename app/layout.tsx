@@ -24,7 +24,7 @@ export default async function RootLayout({
   } = await supabase.auth.getSession();
   return (
     <html lang="en" className="h-full">
-      <body className={cn(inter.className, 'h-full')}>
+      <body className={cn(inter.className, 'h-full flex flex-col')}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -32,7 +32,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <HeaderBar session={session} />
-          {children}
+          <main className="flex-grow overflow-hidden">{children}</main>
         </ThemeProvider>
       </body>
     </html>

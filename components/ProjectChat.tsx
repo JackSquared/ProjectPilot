@@ -1,0 +1,194 @@
+'use client';
+
+import React, {useRef, useEffect, useState} from 'react';
+import {useChat} from 'ai/react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
+import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import {Button} from '@/components/ui/button';
+import {ScrollArea} from '@/components/ui/scroll-area';
+import {Input} from '@/components/ui/input';
+import {Send} from 'lucide-react';
+import Markdown from 'react-markdown';
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {Copy} from 'lucide-react';
+
+interface ScrollableElement extends Element {
+  scrollTimeout?: number;
+}
+
+const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
+When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.
+
+Your first message should:
+1. Introduce yourself as ProjectPilot, an AI that empowers people to build their ideas.
+2. Invite the user to have a conversation about their idea.
+3. Explain that you'll help them make their idea a reality.
+4. Assume they are starting with a fresh idea, and encourage them to begin with a high-level concept.
+5. Mention that if they have already made decisions about implementation, they should feel free to provide those details.
+
+Always maintain a helpful and encouraging tone throughout the conversation.`;
+
+export default function ProjectChat() {
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [lastHeight, setLastHeight] = useState<number | null>(null);
+
+  const {messages, input, handleInputChange, handleSubmit} = useChat({
+    initialMessages: [{role: 'system', id: '0', content: systemMessage}],
+  });
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+
+    const {scrollTop, scrollHeight, clientHeight} = scrollElement;
+    if (!lastHeight) {
+      scrollElement.scrollTop = scrollHeight;
+      return;
+    }
+
+    if (!isUserScrolling && scrollTop + clientHeight >= scrollHeight - 100) {
+      scrollElement.scrollTop = scrollHeight;
+      return;
+    }
+  }, [messages, isUserScrolling, lastHeight]);
+
+  const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const scrollElement = event.target as HTMLDivElement;
+    if (scrollElement.scrollTop === 0 && scrollRef.current) {
+      const {scrollHeight} = scrollRef.current;
+      setLastHeight(scrollHeight);
+    }
+  };
+
+  const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    setIsUserScrolling(true);
+
+    // debounce
+    const target = event.currentTarget as ScrollableElement;
+    clearTimeout(target.scrollTimeout);
+    target.scrollTimeout = window.setTimeout(() => {
+      setIsUserScrolling(false);
+    }, 150);
+  };
+
+  return (
+    <Card className="h-full rounded-none border-0 flex flex-col">
+      <CardHeader className="border-b border-border/20">
+        <CardTitle className="text-2xl font-semibold text-primary">
+          Project Assistant
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-grow p-0 overflow-hidden flex flex-col">
+        <ScrollArea
+          className="flex-grow p-6"
+          onScroll={onScroll}
+          onWheel={onWheel}
+          ref={scrollRef}
+        >
+          {messages
+            .filter((m) => m.role !== 'system')
+            .map((m) => (
+              <div
+                key={m.id}
+                className={`flex ${
+                  m.role === 'user' ? 'justify-end' : 'justify-start'
+                } mb-6`}
+              >
+                <div
+                  className={`flex items-start space-x-3 max-w-[80%] ${
+                    m.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                  }`}
+                >
+                  <Avatar className="w-8 h-8">
+                    {m.role === 'user' ? (
+                      <AvatarFallback className="bg-primary/20 text-primary">
+                        U
+                      </AvatarFallback>
+                    ) : (
+                      <AvatarImage
+                        src="/placeholder.svg?height=32&width=32"
+                        alt="AI"
+                      />
+                    )}
+                  </Avatar>
+                  <div
+                    className={`p-4 rounded-2xl ${
+                      m.role === 'user'
+                        ? 'bg-primary/10 text-primary-foreground'
+                        : 'bg-secondary/10 text-secondary-foreground'
+                    }`}
+                  >
+                    <Markdown
+                      components={{
+                        code({className, children, ...props}) {
+                          const match = /language-(\w+)/.exec(className || '');
+                          const codeString = String(children).replace(
+                            /\n$/,
+                            '',
+                          );
+                          return match ? (
+                            <div className="relative">
+                              <SyntaxHighlighter
+                                // @ts-expect-error style
+                                style={vscDarkPlus}
+                                wrapLongLines
+                                language={match[1]}
+                                PreTag="div"
+                                {...props}
+                              >
+                                {codeString}
+                              </SyntaxHighlighter>
+                              <Copy
+                                className="absolute top-2 right-2 cursor-pointer"
+                                onClick={() =>
+                                  navigator.clipboard.writeText(codeString)
+                                }
+                              />
+                            </div>
+                          ) : (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          );
+                        },
+                      }}
+                    >
+                      {m.content}
+                    </Markdown>
+                  </div>
+                </div>
+              </div>
+            ))}
+        </ScrollArea>
+      </CardContent>
+      <CardFooter className="p-4 border-t border-border/20">
+        <form onSubmit={handleSubmit} className="flex w-full space-x-2">
+          <Input
+            className="flex-grow bg-secondary/10 border-0 focus-visible:ring-1 focus-visible:ring-primary/50 rounded-full"
+            value={input}
+            placeholder="Type your message..."
+            onChange={handleInputChange}
+          />
+          <Button
+            type="submit"
+            size="icon"
+            variant="ghost"
+            className="rounded-full hover:bg-primary/10"
+          >
+            <Send className="h-5 w-5 text-primary" />
+            <span className="sr-only">Send</span>
+          </Button>
+        </form>
+      </CardFooter>
+    </Card>
+  );
+}

@@ -1,13 +1,12 @@
-export default async function ProjectLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import ProjectChat from '@/components/ProjectChat';
+
+export default function ProjectLayout({children}: {children: React.ReactNode}) {
   return (
-    <div className="flex flex-col h-full">
-      <main className="flex-grow overflow-auto p-8 scrollbar-hide">
-        {children}
-      </main>
+    <div className="flex h-full">
+      <div className="w-1/2 overflow-y-auto scrollbar-hide">{children}</div>
+      <div className="w-1/2 border-l border-border">
+        <ProjectChat />
+      </div>
     </div>
   );
 }
