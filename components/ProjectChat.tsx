@@ -17,24 +17,29 @@ import {Send, Copy, User, Bot} from 'lucide-react';
 import Markdown from 'react-markdown';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {Database} from '@/lib/supabase.types';
 
 interface ScrollableElement extends Element {
   scrollTimeout?: number;
 }
 
-const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
+interface ProjectChatProps {
+  project: Database['public']['Tables']['projects']['Row'] | null;
+}
+
+export default function ProjectChat({project}: ProjectChatProps) {
+  const systemMessage = `You are ProjectPilot, an AI assistant designed to help users develop and refine their project ideas. 
+
+You are providing assistance on the following project:
+- Name: ${project?.name || 'Unnamed Project'}
+- Description: ${project?.description || 'No description provided'}
+
+Your role is to assist users in conceptualizing, planning, and implementing their projects. You should be knowledgeable about various aspects of project development, including ideation, planning, design, and implementation.
+
 When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.
 
-Your first message should:
-1. Introduce yourself as ProjectPilot, an AI that empowers people to build their ideas.
-2. Invite the user to have a conversation about their idea.
-3. Explain that you'll help them make their idea a reality.
-4. Assume they are starting with a fresh idea, and encourage them to begin with a high-level concept.
-5. Mention that if they have already made decisions about implementation, they should feel free to provide those details.
+Maintain a helpful, encouraging, and professional tone throughout the conversation. Be ready to provide insights, suggestions, and answer questions related to project development and management.`;
 
-Always maintain a helpful and encouraging tone throughout the conversation.`;
-
-export default function ProjectChat() {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [lastHeight, setLastHeight] = useState<number | null>(null);
 
