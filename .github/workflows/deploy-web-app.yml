@@ -33,5 +33,5 @@ jobs:
           db_password: ${{ secrets.PRODUCTION_DB_PASSWORD }}
           project_id: ${{ secrets.SUPABASE_REF_ID }}
 
-      - name: Deploy staging to Vercel
+      - name: Deploy prod to Vercel
         run: vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --scope=project-pilot
