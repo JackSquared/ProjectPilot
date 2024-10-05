@@ -177,7 +177,7 @@ Maintain a helpful, encouraging, and professional tone throughout the conversati
                                         {toolInvocation.result.name}
                                       </p>
                                       <p>
-                                        <b>Description:</b>
+                                        <b>Description:</b>{' '}
                                         {toolInvocation.result.description}
                                       </p>
                                     </>

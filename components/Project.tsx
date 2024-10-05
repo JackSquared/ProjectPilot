@@ -48,7 +48,72 @@ export default function Project({project: serverProject}: {project: Project}) {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+
+    const projectChannel = supabase
+      .channel('projects')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'projects',
+          filter: `id=eq.${project.id}`,
+        },
+        (payload) => {
+          setProject(payload.new as Project);
+        },
+      )
+      .subscribe();
+
+    const tasksChannel = supabase
+      .channel('tasks')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tasks',
+          filter: `project_id=eq.${project.id}`,
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setKanbanColumns((prevColumns) => {
+              const newTask = payload.new as Task;
+              const columnIndex = ['to do', 'doing', 'done'].indexOf(
+                newTask.status,
+              );
+              const newColumns = [...prevColumns];
+              newColumns[columnIndex].cards.push(newTask);
+              return newColumns;
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            setKanbanColumns((prevColumns) => {
+              const updatedTask = payload.new as Task;
+              return prevColumns.map((column) => ({
+                ...column,
+                cards: column.cards.map((card) =>
+                  card.id === updatedTask.id ? updatedTask : card,
+                ),
+              }));
+            });
+          } else if (payload.eventType === 'DELETE') {
+            setKanbanColumns((prevColumns) => {
+              const deletedTaskId = payload.old.id;
+              return prevColumns.map((column) => ({
+                ...column,
+                cards: column.cards.filter((card) => card.id !== deletedTaskId),
+              }));
+            });
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(projectChannel);
+      supabase.removeChannel(tasksChannel);
+    };
+  }, [project.id]);
 
   const fetchTasks = async () => {
     const {data: tasks, error} = await supabase
