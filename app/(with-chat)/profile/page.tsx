@@ -15,13 +15,13 @@ export default async function Profile() {
   const supabase = createClient();
 
   const {
-    data: {user},
-  } = await supabase.auth.getUser();
+    data: {session},
+  } = await supabase.auth.getSession();
 
+  const user = session?.user;
   if (!user) {
     redirect('/sign-in');
   }
-
   const isGithubConnected = user.app_metadata?.providers?.includes('github');
 
   return (

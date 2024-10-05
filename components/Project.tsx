@@ -20,6 +20,16 @@ import {Input} from '@/components/ui/input';
 import {Plus, Pencil, Save} from 'lucide-react';
 import {createClient} from '@/lib/supabase/client';
 import {api} from '@/app/_trpc/client';
+import {Octokit} from 'octokit';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {formatDistanceToNow} from 'date-fns';
+import Link from 'next/link';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -36,6 +46,15 @@ export default function Project({project: serverProject}: {project: Project}) {
   const [project, setProject] = useState(serverProject);
   const [error, setError] = useState<string | null>(null);
   const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([]);
+  const [repositories, setRepositories] = useState<
+    Array<{id: number; name: string; full_name: string}>
+  >([]);
+  const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
+  const [githubUser, setGithubUser] = useState<string | null>(null);
+  const [lastCommit, setLastCommit] = useState<string | null>(null);
+  const [openIssues, setOpenIssues] = useState<number | null>(null);
+  const [pullRequests, setPullRequests] = useState<number | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const supabase = createClient();
 
@@ -124,6 +143,61 @@ export default function Project({project: serverProject}: {project: Project}) {
       supabase.removeChannel(tasksChannel);
     };
   }, []);
+
+  useEffect(() => {
+    async function fetchGithubData() {
+      const {
+        data: {session},
+      } = await supabase.auth.getSession();
+      if (session?.provider_token) {
+        const octokit = new Octokit({auth: session.provider_token});
+        try {
+          const {data: user} = await octokit.rest.users.getAuthenticated();
+          setGithubUser(user.login);
+
+          const {data: repos} =
+            await octokit.rest.repos.listForAuthenticatedUser();
+          setRepositories(
+            repos.map((repo) => ({
+              id: repo.id,
+              name: repo.name,
+              full_name: repo.full_name,
+            })),
+          );
+        } catch (error) {
+          console.error('Error fetching GitHub data:', error);
+        }
+      }
+    }
+    fetchGithubData();
+  }, []);
+
+  const handleRepoSelect = async (repoFullName: string) => {
+    setSelectedRepo(repoFullName);
+    if (githubUser) {
+      const [owner, repo] = repoFullName.split('/');
+      const octokit = new Octokit({
+        auth: (await supabase.auth.getSession()).data.session?.provider_token,
+      });
+
+      try {
+        const [commitsResponse, issuesResponse, pullsResponse, repoResponse] =
+          await Promise.all([
+            octokit.rest.repos.listCommits({owner, repo, per_page: 1}),
+            octokit.rest.issues.listForRepo({owner, repo, state: 'open'}),
+            octokit.rest.pulls.list({owner, repo, state: 'open'}),
+            octokit.rest.repos.get({owner, repo}),
+          ]);
+
+        setLastCommit(commitsResponse.data[0]?.commit.message || 'No commits');
+        setOpenIssues(issuesResponse.data.length);
+        setPullRequests(pullsResponse.data.length);
+        setLastUpdated(new Date(repoResponse.data.updated_at));
+      } catch (error) {
+        console.error('Error fetching repo details:', error);
+      }
+    }
+  };
 
   const handleSave = async () => {
     const {error} = await supabase.from('projects').upsert(project);
@@ -377,39 +451,70 @@ export default function Project({project: serverProject}: {project: Project}) {
             <CardTitle>Connected GitHub Repository</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Avatar>
-                  <AvatarImage
-                    src="/placeholder.svg?height=40&width=40"
-                    alt="GitHub Avatar"
-                  />
-                  <AvatarFallback>GH</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold">username/project-nexus</p>
-                  <p className="text-sm text-muted-foreground">
-                    Last updated: 2 hours ago
-                  </p>
-                </div>
-              </div>
-              <Button variant="outline">View Repository</Button>
-            </div>
-            <Separator className="my-4" />
-            <div className="space-y-2">
-              <p className="text-sm">
-                <span className="font-semibold">Latest commit:</span> Update
-                README.md with project setup instructions
-              </p>
-              <p className="text-sm">
-                <span className="font-semibold">Branch:</span> main
-              </p>
-              <p className="text-sm">
-                <span className="font-semibold">Open issues:</span> 5
-              </p>
-              <p className="text-sm">
-                <span className="font-semibold">Pull requests:</span> 2
-              </p>
+            <div className="space-y-4">
+              <Select
+                onValueChange={handleRepoSelect}
+                value={selectedRepo || undefined}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a repository" />
+                </SelectTrigger>
+                <SelectContent>
+                  {repositories.map((repo) => (
+                    <SelectItem key={repo.id} value={repo.full_name}>
+                      {repo.full_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedRepo && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <Avatar>
+                        <AvatarImage
+                          src={`https://github.com/${githubUser}.png`}
+                          alt="GitHub Avatar"
+                        />
+                        <AvatarFallback>GH</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold">{selectedRepo}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Last updated:{' '}
+                          {lastUpdated
+                            ? formatDistanceToNow(lastUpdated, {
+                                addSuffix: true,
+                              })
+                            : 'Unknown'}
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      href={`https://github.com/${selectedRepo}`}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <Button variant="outline">View Repository</Button>
+                    </Link>
+                  </div>
+                  <Separator className="my-4" />
+                  <div className="space-y-2">
+                    <p className="text-sm">
+                      <span className="font-semibold">Latest commit:</span>{' '}
+                      {lastCommit}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-semibold">Open issues:</span>{' '}
+                      {openIssues}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-semibold">Pull requests:</span>{' '}
+                      {pullRequests}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

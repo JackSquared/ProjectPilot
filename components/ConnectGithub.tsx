@@ -4,9 +4,11 @@ import {createClient} from '@/lib/supabase/client';
 import {Button} from './ui/button';
 import {useEffect, useState} from 'react';
 import {AuthError, UserIdentity} from '@supabase/supabase-js';
+import {linkGithub} from '@/app/actions/auth';
 
 export function ConnectGithub({connected}: {connected: boolean}) {
   const supabase = createClient();
+
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<AuthError | null>(null);
 
@@ -43,9 +45,7 @@ export function ConnectGithub({connected}: {connected: boolean}) {
 
   const linkIdentity = async () => {
     setPending(true);
-    await supabase.auth.linkIdentity({
-      provider: 'github',
-    });
+    await linkGithub();
 
     setPending(false);
   };
