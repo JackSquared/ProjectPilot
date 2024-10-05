@@ -22,5 +22,7 @@ runs:
         SUPABASE_DB_PASSWORD: ${{ inputs.db_password }}
         PROJECT_ID: ${{ inputs.project_id }}
       run: |
+        echo "GITHUB_CLIENT_ID=something" > .env
+        echo "GITHUB_CLIENT_SECRET=something" >> .env
         supabase link --project-ref $PROJECT_ID
         supabase db push
