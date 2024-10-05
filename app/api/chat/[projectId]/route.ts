@@ -2,7 +2,11 @@ import {openai} from '@ai-sdk/openai';
 import {convertToCoreMessages, streamText} from 'ai';
 import {z} from 'zod';
 import {createClient} from '@/lib/supabase/server';
-import {tryUpdateProject, tryAddTask} from '@/lib/projects/queries';
+import {
+  tryUpdateProject,
+  tryAddTask,
+  tryUpdateProjectTags,
+} from '@/lib/projects/queries';
 
 export const maxDuration = 30;
 export const runtime = 'edge';
@@ -12,6 +16,21 @@ export async function POST(
   {params}: {params: {projectId: string}},
 ) {
   const supabase = createClient();
+
+  async function updateProjectTags(
+    projectId: number,
+    serverTags: string[] | null,
+    clientTags: string[] | null,
+    opsTags: string[] | null,
+  ) {
+    return tryUpdateProjectTags(
+      supabase,
+      projectId,
+      serverTags,
+      clientTags,
+      opsTags,
+    );
+  }
 
   async function addTask(
     projectId: number,
@@ -77,6 +96,37 @@ export async function POST(
           description: string;
         }) => {
           const project = await updateProject(name, description);
+          return project;
+        },
+      },
+      updateTechStack: {
+        description: 'Update the tech stack of a project.',
+        parameters: z.object({
+          clientTags: z
+            .array(z.string())
+            .describe('The client tech stack items of the project'),
+          opsTags: z
+            .array(z.string())
+            .describe('The dev ops tech stack items of the project'),
+          serverTags: z
+            .array(z.string())
+            .describe('The server tech stack items of the project'),
+        }),
+        execute: async ({
+          clientTags,
+          opsTags,
+          serverTags,
+        }: {
+          clientTags: string[];
+          opsTags: string[];
+          serverTags: string[];
+        }) => {
+          const project = await updateProjectTags(
+            parseInt(params.projectId),
+            clientTags,
+            opsTags,
+            serverTags,
+          );
           return project;
         },
       },

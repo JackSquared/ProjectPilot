@@ -31,15 +31,6 @@ type KanbanColumn = {
   cards: Task[];
 };
 
-const techStackItems = [
-  {name: 'React', color: 'bg-blue-500'},
-  {name: 'Next.js', color: 'bg-black'},
-  {name: 'TypeScript', color: 'bg-blue-700'},
-  {name: 'Tailwind CSS', color: 'bg-teal-500'},
-  {name: 'Prisma', color: 'bg-green-600'},
-  {name: 'PostgreSQL', color: 'bg-blue-400'},
-];
-
 export default function Project({project: serverProject}: {project: Project}) {
   const [isEditing, setIsEditing] = useState(false);
   const [project, setProject] = useState(serverProject);
@@ -217,6 +208,21 @@ export default function Project({project: serverProject}: {project: Project}) {
     }
   };
 
+  const combinedTags = [
+    ...(project.client_tags || []).map((tag) => ({
+      name: tag,
+      color: 'bg-blue-500',
+    })),
+    ...(project.server_tags || []).map((tag) => ({
+      name: tag,
+      color: 'bg-teal-500',
+    })),
+    ...(project.ops_tags || []).map((tag) => ({
+      name: tag,
+      color: 'bg-green-600',
+    })),
+  ];
+
   return (
     <div className="h-full p-6">
       <div className="space-y-6">
@@ -277,7 +283,7 @@ export default function Project({project: serverProject}: {project: Project}) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {techStackItems.map((tech, index) => (
+              {combinedTags.map((tech, index) => (
                 <Badge
                   key={index}
                   variant="secondary"

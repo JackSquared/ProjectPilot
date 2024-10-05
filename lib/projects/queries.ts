@@ -65,3 +65,24 @@ export async function tryAddTask(
     .single();
   return data;
 }
+
+export async function tryUpdateProjectTags(
+  client: SupabaseClient<Database>,
+  projectId: number,
+  serverTags: string[] | null,
+  clientTags: string[] | null,
+  opsTags: string[] | null,
+) {
+  const {data} = await client
+    .from('projects')
+    .update({
+      server_tags: serverTags,
+      client_tags: clientTags,
+      ops_tags: opsTags,
+    })
+    .eq('id', projectId)
+    .select()
+    .single();
+
+  return data;
+}

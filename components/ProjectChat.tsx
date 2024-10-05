@@ -211,6 +211,43 @@ Maintain a helpful, encouraging, and professional tone throughout the conversati
                                 </div>
                               );
                             }
+                            if (toolInvocation.toolName === 'updateTechStack') {
+                              return (
+                                <div
+                                  className="p-3 rounded-lg text-center w-full"
+                                  key={toolInvocation.toolCallId}
+                                >
+                                  {'result' in toolInvocation && (
+                                    <>
+                                      {toolInvocation.result.server_tags &&
+                                        toolInvocation.result.server_tags
+                                          .length > 0 && (
+                                          <p>
+                                            <b>Server Tags:</b>{' '}
+                                            {toolInvocation.result.server_tags}
+                                          </p>
+                                        )}
+                                      {toolInvocation.result.client_tags &&
+                                        toolInvocation.result.client_tags
+                                          .length > 0 && (
+                                          <p>
+                                            <b>Client Tags:</b>{' '}
+                                            {toolInvocation.result.client_tags}
+                                          </p>
+                                        )}
+                                      {toolInvocation.result.ops_tags &&
+                                        toolInvocation.result.ops_tags.length >
+                                          0 && (
+                                          <p>
+                                            <b>DevOps Tags:</b>{' '}
+                                            {toolInvocation.result.ops_tags}
+                                          </p>
+                                        )}
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            }
                             return null;
                           },
                         )}
