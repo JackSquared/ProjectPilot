@@ -19,12 +19,12 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Connect to Vercel
-        run: vercel link --yes --repo --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel link --yes --repo --token=${{ secrets.VERCEL_TOKEN }} --scope=project-pilot
       - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }} --scope=project-pilot
 
       - name: Build
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }} --scope=project-pilot
 
       - name: Deploy Supabase Migrations
         uses: ./.github/actions/deploy-migrations
@@ -34,4 +34,4 @@ jobs:
           project_id: ${{ secrets.SUPABASE_REF_ID }}
 
       - name: Deploy staging to Vercel
-        run: vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --scope=project-pilot
