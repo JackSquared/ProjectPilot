@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/select';
 import {formatDistanceToNow} from 'date-fns';
 import Link from 'next/link';
+import {RouterOutput} from '@/app/server';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -47,9 +48,8 @@ export default function Project({project: serverProject}: {project: Project}) {
   const [error, setError] = useState<string | null>(null);
   const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([]);
   const [repositories, setRepositories] = useState<
-    Array<{id: number; name: string; full_name: string}>
+    Array<RouterOutput['codeRepository']['getLatest']>
   >([]);
-  const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
   const [githubUser, setGithubUser] = useState<string | null>(null);
   const [lastCommit, setLastCommit] = useState<string | null>(null);
   const [openIssues, setOpenIssues] = useState<number | null>(null);
@@ -59,6 +59,20 @@ export default function Project({project: serverProject}: {project: Project}) {
   const supabase = createClient();
 
   const {data: tasks} = api.task.getAll.useQuery({projectId: project.id});
+  const {mutate: createCodeRepository} =
+    api.codeRepository.create.useMutation();
+  const {data: codeRepository} = api.codeRepository.getLatest.useQuery({
+    projectId: project.id,
+  });
+  const [selectedRepo, setSelectedRepo] = useState<string | null>(
+    codeRepository?.owner_repo,
+  );
+
+  useEffect(() => {
+    if (codeRepository) {
+      setSelectedRepo(codeRepository.owner_repo);
+    }
+  }, [codeRepository]);
 
   useEffect(() => {
     if (tasks) {
@@ -149,18 +163,22 @@ export default function Project({project: serverProject}: {project: Project}) {
       const {
         data: {session},
       } = await supabase.auth.getSession();
+
       if (session?.provider_token) {
         const octokit = new Octokit({auth: session.provider_token});
+
         try {
           const {data: user} = await octokit.rest.users.getAuthenticated();
           setGithubUser(user.login);
 
           const {data: repos} =
             await octokit.rest.repos.listForAuthenticatedUser();
+
           setRepositories(
-            repos.map((repo) => ({
+            repos.map((repo: RouterOutput['codeRepository']['getLatest']) => ({
               id: repo.id,
               name: repo.name,
+              owner: repo.owner.login,
               full_name: repo.full_name,
             })),
           );
@@ -174,12 +192,23 @@ export default function Project({project: serverProject}: {project: Project}) {
 
   const handleRepoSelect = async (repoFullName: string) => {
     setSelectedRepo(repoFullName);
+
+    const repo = repositories.find(
+      (repo: RouterOutput['codeRepository']['getLatest']) =>
+        repo.owner_repo === repoFullName,
+    );
+    if (repo) {
+      createCodeRepository({
+        projectId: project.id,
+        owner: repo?.owner,
+        repo: repo?.name,
+      });
+    }
     if (githubUser) {
       const [owner, repo] = repoFullName.split('/');
       const octokit = new Octokit({
         auth: (await supabase.auth.getSession()).data.session?.provider_token,
       });
-
       try {
         const [commitsResponse, issuesResponse, pullsResponse, repoResponse] =
           await Promise.all([
