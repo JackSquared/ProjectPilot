@@ -11,12 +11,20 @@ CREATE TABLE IF NOT EXISTS public.tasks(
 
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Project owners can manage tasks" ON public.tasks TO public
-    USING ((
-        SELECT
-            user_id::text
-        FROM
-            public.projects
-        WHERE
-            id = project_id) =(current_setting('request.jwt.claims', TRUE)::jsonb #>> '{sub}'));
+CREATE POLICY "Users can manage tasks in their projects" ON tasks
+    FOR ALL
+        USING (project_id IN (
+            SELECT
+                id
+            FROM
+                projects
+            WHERE
+                user_id = auth.uid()))
+            WITH CHECK (project_id IN (
+                SELECT
+                    id
+                FROM
+                    projects
+                WHERE
+                    user_id = auth.uid()));
 

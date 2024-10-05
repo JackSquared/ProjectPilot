@@ -113,14 +113,13 @@ export default function Project({project: serverProject}: {project: Project}) {
       supabase.removeChannel(projectChannel);
       supabase.removeChannel(tasksChannel);
     };
-  }, [project.id]);
+  }, []);
 
   const fetchTasks = async () => {
     const {data: tasks, error} = await supabase
       .from('tasks')
       .select('*')
       .eq('project_id', project.id);
-
     if (error) {
       console.error('Error fetching tasks:', error);
       setError('Failed to fetch tasks.');

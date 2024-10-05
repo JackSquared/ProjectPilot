@@ -2,7 +2,7 @@ import {openai} from '@ai-sdk/openai';
 import {convertToCoreMessages, streamText} from 'ai';
 import {z} from 'zod';
 import {createClient} from '@/lib/supabase/server';
-import {tryUpdateProject} from '@/lib/projects/queries';
+import {tryUpdateProject, tryAddTask} from '@/lib/projects/queries';
 
 export const maxDuration = 30;
 export const runtime = 'edge';
@@ -12,6 +12,27 @@ export async function POST(
   {params}: {params: {projectId: string}},
 ) {
   const supabase = createClient();
+
+  async function addTask(
+    projectId: number,
+    title: string,
+    description: string | null,
+    status: string,
+  ) {
+    try {
+      const {
+        data: {user},
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw 'no user!';
+      }
+
+      return tryAddTask(supabase, projectId, title, description, status);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   async function updateProject(name: string, description: string) {
     try {
@@ -57,6 +78,38 @@ export async function POST(
         }) => {
           const project = await updateProject(name, description);
           return project;
+        },
+      },
+      addTask: {
+        description: 'Add a task to a project.',
+        parameters: z.object({
+          title: z.string().describe('The title of the task'),
+          description: z
+            .string()
+            .optional()
+            .describe('The description of the task'),
+          status: z
+            .enum(['to do', 'doing', 'done'])
+            .describe(
+              'The status of the task. If not provided, the task will be added to the "to do" column.',
+            ),
+        }),
+        execute: async ({
+          title,
+          description,
+          status,
+        }: {
+          title: string;
+          description: string;
+          status: string;
+        }) => {
+          const task = await addTask(
+            parseInt(params.projectId),
+            title,
+            description,
+            status,
+          );
+          return task;
         },
       },
     },

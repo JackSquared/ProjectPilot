@@ -50,3 +50,18 @@ export async function tryUpdateProject(
 
   return data;
 }
+
+export async function tryAddTask(
+  client: SupabaseClient<Database>,
+  projectId: number,
+  title: string,
+  description: string | null,
+  status: string,
+) {
+  const {data} = await client
+    .from('tasks')
+    .insert({project_id: projectId, title, description, status})
+    .select()
+    .single();
+  return data;
+}

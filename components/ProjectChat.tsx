@@ -137,6 +137,7 @@ Maintain a helpful, encouraging, and professional tone throughout the conversati
                               return match ? (
                                 <div className="relative my-4">
                                   <SyntaxHighlighter
+                                    //@ts-expect-error ignore
                                     style={vscDarkPlus}
                                     wrapLongLines
                                     language={match[1]}
@@ -179,6 +180,31 @@ Maintain a helpful, encouraging, and professional tone throughout the conversati
                                       <p>
                                         <b>Description:</b>{' '}
                                         {toolInvocation.result.description}
+                                      </p>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            }
+                            if (toolInvocation.toolName === 'addTask') {
+                              return (
+                                <div
+                                  className="p-3 rounded-lg text-center w-full"
+                                  key={toolInvocation.toolCallId}
+                                >
+                                  {'result' in toolInvocation && (
+                                    <>
+                                      <p>
+                                        <b>Title:</b>{' '}
+                                        {toolInvocation.result.title}
+                                      </p>
+                                      <p>
+                                        <b>Description:</b>{' '}
+                                        {toolInvocation.result.description}
+                                      </p>
+                                      <p>
+                                        <b>Status:</b>{' '}
+                                        {toolInvocation.result.status}
                                       </p>
                                     </>
                                   )}
