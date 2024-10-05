@@ -1,0 +1,26 @@
+name: "Deploy Migrations"
+description: "Deploy database migrations"
+
+inputs:
+  supabase_access_token:
+    description: "Supabase access token"
+    required: true
+  db_password:
+    description: "Database password"
+    required: true
+  project_id:
+    description: "Project ID"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: supabase/setup-cli@v1
+    - shell: bash
+      env:
+        SUPABASE_ACCESS_TOKEN: ${{ inputs.supabase_access_token }}
+        SUPABASE_DB_PASSWORD: ${{ inputs.db_password }}
+        PROJECT_ID: ${{ inputs.project_id }}
+      run: |
+        supabase link --project-ref $PROJECT_ID
+        supabase db push

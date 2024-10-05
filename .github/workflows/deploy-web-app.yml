@@ -1,0 +1,37 @@
+name: Deploy Web App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Connect to Vercel
+        run: vercel link --yes --repo --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Supabase Migrations
+        uses: ./.github/actions/deploy-migrations
+        with:
+          supabase_access_token: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          db_password: ${{ secrets.PRODUCTION_DB_PASSWORD }}
+          project_id: ${{ secrets.SUPABASE_REF_ID }}
+
+      - name: Deploy staging to Vercel
+        run: vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
