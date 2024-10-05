@@ -80,6 +80,8 @@ export default function ProjectChat() {
     }, 150);
   };
 
+  const filteredMessages = messages.filter((m) => m.role !== 'system');
+
   return (
     <Card className="h-full rounded-none border-0 flex flex-col">
       <CardHeader className="border-b border-border/20">
@@ -87,16 +89,21 @@ export default function ProjectChat() {
           Project Assistant
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow p-0 overflow-hidden flex flex-col">
+      <CardContent className="flex-grow p-0 overflow-hidden flex flex-col relative">
         <ScrollArea
           className="flex-grow p-6"
           onScroll={onScroll}
           onWheel={onWheel}
           ref={scrollRef}
         >
-          {messages
-            .filter((m) => m.role !== 'system')
-            .map((m) => (
+          {filteredMessages.length === 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <p className="text-xl text-muted-foreground">
+                What do you want to work on?
+              </p>
+            </div>
+          ) : (
+            filteredMessages.map((m) => (
               <div
                 key={m.id}
                 className={`flex ${
@@ -138,7 +145,6 @@ export default function ProjectChat() {
                           return match ? (
                             <div className="relative">
                               <SyntaxHighlighter
-                                // @ts-expect-error style
                                 style={vscDarkPlus}
                                 wrapLongLines
                                 language={match[1]}
@@ -167,7 +173,8 @@ export default function ProjectChat() {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+          )}
         </ScrollArea>
       </CardContent>
       <CardFooter className="p-4 border-t border-border/20">

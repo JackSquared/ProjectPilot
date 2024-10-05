@@ -145,7 +145,6 @@ export default function Project({project: serverProject}: {project: Project}) {
       newColumns[destColIndex].cards = destTasks;
       setKanbanColumns(newColumns);
 
-      // Update the task status in the database
       const newStatus = ['to do', 'doing', 'done'][destColIndex];
       const {error} = await supabase
         .from('tasks')
