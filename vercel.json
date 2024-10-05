@@ -4,5 +4,6 @@
       "deploymentEnabled": {
         "main": false
       }
-    }
+    },
+    "buildCommand": "next build"
 }
