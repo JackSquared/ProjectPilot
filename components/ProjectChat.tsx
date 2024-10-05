@@ -9,15 +9,14 @@ import {
   CardTitle,
   CardFooter,
 } from '@/components/ui/card';
-import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {Input} from '@/components/ui/input';
-import {Send} from 'lucide-react';
+import {Send, Copy, User, Bot} from 'lucide-react';
 import Markdown from 'react-markdown';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
-import {Copy} from 'lucide-react';
 
 interface ScrollableElement extends Element {
   scrollTimeout?: number;
@@ -83,7 +82,7 @@ export default function ProjectChat() {
   const filteredMessages = messages.filter((m) => m.role !== 'system');
 
   return (
-    <Card className="h-full rounded-none border-0 flex flex-col">
+    <Card className="h-full rounded-none border-0 flex flex-col bg-zinc-900">
       <CardHeader className="border-b border-border/20">
         <CardTitle className="text-2xl font-semibold text-primary">
           Project Assistant
@@ -104,75 +103,63 @@ export default function ProjectChat() {
             </div>
           ) : (
             filteredMessages.map((m) => (
-              <div
-                key={m.id}
-                className={`flex ${
-                  m.role === 'user' ? 'justify-end' : 'justify-start'
-                } mb-6`}
-              >
-                <div
-                  className={`flex items-start space-x-3 max-w-[80%] ${
-                    m.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                  }`}
-                >
-                  <Avatar className="w-8 h-8">
-                    {m.role === 'user' ? (
-                      <AvatarFallback className="bg-primary/20 text-primary">
-                        U
+              <Card key={m.id} className="mb-4 w-full shadow-md bg-zinc-800">
+                <CardContent className="p-4">
+                  <div className="flex space-x-4">
+                    <Avatar className="w-8 h-8 shadow-sm flex-shrink-0">
+                      <AvatarFallback className="bg-secondary text-secondary-foreground">
+                        {m.role === 'user' ? (
+                          <User className="w-4 h-4" />
+                        ) : (
+                          <Bot className="w-4 h-4" />
+                        )}
                       </AvatarFallback>
-                    ) : (
-                      <AvatarImage
-                        src="/placeholder.svg?height=32&width=32"
-                        alt="AI"
-                      />
-                    )}
-                  </Avatar>
-                  <div
-                    className={`p-4 rounded-2xl ${
-                      m.role === 'user'
-                        ? 'bg-primary/10 text-primary-foreground'
-                        : 'bg-secondary/10 text-secondary-foreground'
-                    }`}
-                  >
-                    <Markdown
-                      components={{
-                        code({className, children, ...props}) {
-                          const match = /language-(\w+)/.exec(className || '');
-                          const codeString = String(children).replace(
-                            /\n$/,
-                            '',
-                          );
-                          return match ? (
-                            <div className="relative">
-                              <SyntaxHighlighter
-                                style={vscDarkPlus}
-                                wrapLongLines
-                                language={match[1]}
-                                PreTag="div"
-                                {...props}
-                              >
-                                {codeString}
-                              </SyntaxHighlighter>
-                              <Copy
-                                className="absolute top-2 right-2 cursor-pointer"
-                                onClick={() =>
-                                  navigator.clipboard.writeText(codeString)
-                                }
-                              />
-                            </div>
-                          ) : (
-                            <code className={className} {...props}>
-                              {children}
-                            </code>
-                          );
-                        },
-                      }}
-                    >
-                      {m.content}
-                    </Markdown>
+                    </Avatar>
+                    <div className="flex-grow">
+                      <div className="rounded-lg text-zinc-100 mt-1">
+                        <Markdown
+                          components={{
+                            code({className, children, ...props}) {
+                              const match = /language-(\w+)/.exec(
+                                className || '',
+                              );
+                              const codeString = String(children).replace(
+                                /\n$/,
+                                '',
+                              );
+                              return match ? (
+                                <div className="relative my-4">
+                                  <SyntaxHighlighter
+                                    style={vscDarkPlus}
+                                    wrapLongLines
+                                    language={match[1]}
+                                    PreTag="div"
+                                    {...props}
+                                  >
+                                    {codeString}
+                                  </SyntaxHighlighter>
+                                  <Copy
+                                    className="absolute top-2 right-2 cursor-pointer text-zinc-400 hover:text-zinc-200"
+                                    onClick={() =>
+                                      navigator.clipboard.writeText(codeString)
+                                    }
+                                  />
+                                </div>
+                              ) : (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              );
+                            },
+                          }}
+                        >
+                          {m.content}
+                        </Markdown>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))
           )}
         </ScrollArea>
@@ -180,7 +167,7 @@ export default function ProjectChat() {
       <CardFooter className="p-4 border-t border-border/20">
         <form onSubmit={handleSubmit} className="flex w-full space-x-2">
           <Input
-            className="flex-grow bg-secondary/10 border-0 focus-visible:ring-1 focus-visible:ring-primary/50 rounded-full"
+            className="flex-grow bg-zinc-800 border-0 focus-visible:ring-1 focus-visible:ring-primary/50 rounded-full text-zinc-100"
             value={input}
             placeholder="Type your message..."
             onChange={handleInputChange}
@@ -189,7 +176,7 @@ export default function ProjectChat() {
             type="submit"
             size="icon"
             variant="ghost"
-            className="rounded-full hover:bg-primary/10"
+            className="rounded-full hover:bg-zinc-700"
           >
             <Send className="h-5 w-5 text-primary" />
             <span className="sr-only">Send</span>
