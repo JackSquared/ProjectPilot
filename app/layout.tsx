@@ -4,6 +4,7 @@ import {ThemeProvider} from '@/components/theme-provider';
 import {cn} from '@/lib/utils';
 import {HeaderBar} from '@/components/HeaderBar';
 import {createClient} from '@/lib/supabase/server';
+import TRPCProvider from './_trpc/TRPCProvider';
 
 const inter = Inter({subsets: ['latin']});
 
@@ -31,8 +32,10 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <HeaderBar session={session} />
-          <main className="flex-grow overflow-hidden">{children}</main>
+          <TRPCProvider>
+            <HeaderBar session={session} />
+            <main className="flex-grow overflow-hidden">{children}</main>
+          </TRPCProvider>
         </ThemeProvider>
       </body>
     </html>
