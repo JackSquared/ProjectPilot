@@ -18,7 +18,6 @@ import {Separator} from '@/components/ui/separator';
 import {Input} from '@/components/ui/input';
 import {Plus, Pencil, Save} from 'lucide-react';
 import {createClient} from '@/lib/supabase/client';
-import {trpc} from '@/app/_trpc/client';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -44,8 +43,6 @@ export default function Project({project: serverProject}: {project: Project}) {
   const [project, setProject] = useState(serverProject);
   const [error, setError] = useState<string | null>(null);
   const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([]);
-
-  const {data: example} = trpc.getExample.useQuery();
 
   const supabase = createClient();
 
