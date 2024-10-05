@@ -1,4 +1,4 @@
-import ProjectList from '../../components/ProjectList';
+import ProjectList from '../../../components/ProjectList';
 import {createClient} from '@/lib/supabase/server';
 
 export const revalidate = 0;

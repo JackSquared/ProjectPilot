@@ -1,11 +1,5 @@
-import Projects from '@/app/projects/page';
+import {redirect} from 'next/navigation';
 
 export default async function Home() {
-  return (
-    <>
-      <div>
-        <Projects />
-      </div>
-    </>
-  );
+  redirect('/projects');
 }
