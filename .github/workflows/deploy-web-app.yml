@@ -24,7 +24,7 @@ jobs:
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }} --scope=project-pilot
 
       - name: Build
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }} --scope=project-pilot
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} --scope=project-pilot
 
       - name: Deploy Supabase Migrations
         uses: ./.github/actions/deploy-migrations
