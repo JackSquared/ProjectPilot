@@ -14,10 +14,12 @@ import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
+
 import {Separator} from '@/components/ui/separator';
 import {Input} from '@/components/ui/input';
 import {Plus, Pencil, Save} from 'lucide-react';
 import {createClient} from '@/lib/supabase/client';
+import {api} from '@/app/_trpc/client';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -46,9 +48,26 @@ export default function Project({project: serverProject}: {project: Project}) {
 
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchTasks();
+  const {data: tasks} = api.task.getAll.useQuery({projectId: project.id});
 
+  useEffect(() => {
+    if (tasks) {
+      const columns: KanbanColumn[] = [
+        {
+          title: 'To Do',
+          cards: tasks.filter((task) => task.status === 'to do'),
+        },
+        {
+          title: 'In Progress',
+          cards: tasks.filter((task) => task.status === 'doing'),
+        },
+        {title: 'Done', cards: tasks.filter((task) => task.status === 'done')},
+      ];
+      setKanbanColumns(columns);
+    }
+  }, [tasks]);
+
+  useEffect(() => {
     const projectChannel = supabase
       .channel('projects')
       .on(
@@ -114,30 +133,6 @@ export default function Project({project: serverProject}: {project: Project}) {
       supabase.removeChannel(tasksChannel);
     };
   }, []);
-
-  const fetchTasks = async () => {
-    const {data: tasks, error} = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('project_id', project.id);
-    if (error) {
-      console.error('Error fetching tasks:', error);
-      setError('Failed to fetch tasks.');
-    } else {
-      const columns: KanbanColumn[] = [
-        {
-          title: 'To Do',
-          cards: tasks.filter((task) => task.status === 'to do'),
-        },
-        {
-          title: 'In Progress',
-          cards: tasks.filter((task) => task.status === 'doing'),
-        },
-        {title: 'Done', cards: tasks.filter((task) => task.status === 'done')},
-      ];
-      setKanbanColumns(columns);
-    }
-  };
 
   const handleSave = async () => {
     const {error} = await supabase.from('projects').upsert(project);

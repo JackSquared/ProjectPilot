@@ -3,11 +3,11 @@ import {getUserFromCookies} from '@/app/server/getUser';
 
 export const createContext = async () => {
   const user = await getUserFromCookies();
-  const supabase = createClient();
+  const db = createClient();
 
   return {
     user,
-    supabase,
+    db,
   };
 };
 
