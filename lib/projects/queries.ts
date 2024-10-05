@@ -34,3 +34,19 @@ export async function tryCreateProject(
 
   return data?.[0];
 }
+
+export async function tryUpdateProject(
+  client: SupabaseClient<Database>,
+  projectId: number,
+  name: string,
+  description: string,
+) {
+  const {data} = await client
+    .from('projects')
+    .update({name, description})
+    .eq('id', projectId)
+    .select()
+    .single();
+
+  return data;
+}

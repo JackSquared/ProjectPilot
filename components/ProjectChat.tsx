@@ -44,6 +44,7 @@ Maintain a helpful, encouraging, and professional tone throughout the conversati
   const [lastHeight, setLastHeight] = useState<number | null>(null);
 
   const {messages, input, handleInputChange, handleSubmit} = useChat({
+    api: `/api/chat/${project?.id}`,
     initialMessages: [{role: 'system', id: '0', content: systemMessage}],
   });
 
