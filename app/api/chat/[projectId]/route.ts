@@ -56,7 +56,7 @@ export async function POST(
           description: string;
         }) => {
           const project = await updateProject(name, description);
-          return project?.id;
+          return project;
         },
       },
     },

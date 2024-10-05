@@ -18,6 +18,7 @@ import Markdown from 'react-markdown';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {Database} from '@/lib/supabase.types';
+import {ToolInvocation} from 'ai';
 
 interface ScrollableElement extends Element {
   scrollTimeout?: number;
@@ -161,6 +162,32 @@ Maintain a helpful, encouraging, and professional tone throughout the conversati
                         >
                           {m.content}
                         </Markdown>
+                        {m.toolInvocations?.map(
+                          (toolInvocation: ToolInvocation) => {
+                            if (toolInvocation.toolName === 'updateProject') {
+                              return (
+                                <div
+                                  className="p-3 rounded-lg text-center w-full"
+                                  key={toolInvocation.toolCallId}
+                                >
+                                  {'result' in toolInvocation && (
+                                    <>
+                                      <p>
+                                        <b>Name:</b>{' '}
+                                        {toolInvocation.result.name}
+                                      </p>
+                                      <p>
+                                        <b>Description:</b>
+                                        {toolInvocation.result.description}
+                                      </p>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            }
+                            return null;
+                          },
+                        )}
                       </div>
                     </div>
                   </div>
