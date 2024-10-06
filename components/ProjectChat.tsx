@@ -13,12 +13,13 @@ import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {Input} from '@/components/ui/input';
-import {Send, Copy, User, Bot} from 'lucide-react';
+import {Send, Copy, User, Bot, Square} from 'lucide-react';
 import Markdown from 'react-markdown';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {Database} from '@/lib/supabase.types';
 import {ToolInvocation} from 'ai';
+import {LoadingSpinner} from './icons/LoadingSpinner';
 
 interface ScrollableElement extends Element {
   scrollTimeout?: number;
@@ -44,10 +45,11 @@ Maintain a helpful, encouraging, and professional tone throughout the conversati
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [lastHeight, setLastHeight] = useState<number | null>(null);
 
-  const {messages, input, handleInputChange, handleSubmit} = useChat({
-    api: `/api/chat/${project?.id}`,
-    initialMessages: [{role: 'system', id: '0', content: systemMessage}],
-  });
+  const {messages, input, handleInputChange, handleSubmit, isLoading, stop} =
+    useChat({
+      api: `/api/chat/${project?.id}`,
+      initialMessages: [{role: 'system', id: '0', content: systemMessage}],
+    });
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -268,15 +270,31 @@ Maintain a helpful, encouraging, and professional tone throughout the conversati
             placeholder="Type your message..."
             onChange={handleInputChange}
           />
-          <Button
-            type="submit"
-            size="icon"
-            variant="ghost"
-            className="rounded-full hover:bg-zinc-700"
-          >
-            <Send className="h-5 w-5 text-primary" />
-            <span className="sr-only">Send</span>
-          </Button>
+          {isLoading ? (
+            <div className="flex space-x-2 items-center">
+              <LoadingSpinner className="h-5 w-5 text-primary" />
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="rounded-full hover:bg-zinc-700"
+                onClick={() => stop()}
+              >
+                <Square className="h-5 w-5 text-primary" />
+                <span className="sr-only">Stop</span>
+              </Button>
+            </div>
+          ) : (
+            <Button
+              type="submit"
+              size="icon"
+              variant="ghost"
+              className="rounded-full hover:bg-zinc-700"
+            >
+              <Send className="h-5 w-5 text-primary" />
+              <span className="sr-only">Send</span>
+            </Button>
+          )}
         </form>
       </CardFooter>
     </Card>
