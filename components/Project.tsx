@@ -14,23 +14,12 @@ import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
-
-import {Separator} from '@/components/ui/separator';
 import {Input} from '@/components/ui/input';
 import {Plus, Pencil, Save} from 'lucide-react';
 import {createClient} from '@/lib/supabase/client';
 import {api} from '@/app/_trpc/client';
-import {Octokit} from 'octokit';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {formatDistanceToNow} from 'date-fns';
-import Link from 'next/link';
-import {RouterOutput} from '@/app/server';
+
+import ConnectedRepository from './ConnectedRepository';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -42,37 +31,23 @@ type KanbanColumn = {
   cards: Task[];
 };
 
-export default function Project({project: serverProject}: {project: Project}) {
+type ProjectProps = {
+  project: Project;
+  providerToken: string | null;
+};
+
+export default function Project({
+  project: serverProject,
+  providerToken,
+}: ProjectProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [project, setProject] = useState(serverProject);
   const [error, setError] = useState<string | null>(null);
   const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([]);
-  const [repositories, setRepositories] = useState<
-    Array<RouterOutput['codeRepository']['getLatest']>
-  >([]);
-  const [githubUser, setGithubUser] = useState<string | null>(null);
-  const [lastCommit, setLastCommit] = useState<string | null>(null);
-  const [openIssues, setOpenIssues] = useState<number | null>(null);
-  const [pullRequests, setPullRequests] = useState<number | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const supabase = createClient();
 
   const {data: tasks} = api.task.getAll.useQuery({projectId: project.id});
-  const {mutate: createCodeRepository} =
-    api.codeRepository.create.useMutation();
-  const {data: codeRepository} = api.codeRepository.getLatest.useQuery({
-    projectId: project.id,
-  });
-  const [selectedRepo, setSelectedRepo] = useState<string | null>(
-    codeRepository?.owner_repo,
-  );
-
-  useEffect(() => {
-    if (codeRepository) {
-      setSelectedRepo(codeRepository.owner_repo);
-    }
-  }, [codeRepository]);
 
   useEffect(() => {
     if (tasks) {
@@ -157,76 +132,6 @@ export default function Project({project: serverProject}: {project: Project}) {
       supabase.removeChannel(tasksChannel);
     };
   }, []);
-
-  useEffect(() => {
-    async function fetchGithubData() {
-      const {
-        data: {session},
-      } = await supabase.auth.getSession();
-
-      if (session?.provider_token) {
-        const octokit = new Octokit({auth: session.provider_token});
-
-        try {
-          const {data: user} = await octokit.rest.users.getAuthenticated();
-          setGithubUser(user.login);
-
-          const {data: repos} =
-            await octokit.rest.repos.listForAuthenticatedUser();
-
-          setRepositories(
-            repos.map((repo: RouterOutput['codeRepository']['getLatest']) => ({
-              id: repo.id,
-              name: repo.name,
-              owner: repo.owner.login,
-              full_name: repo.full_name,
-            })),
-          );
-        } catch (error) {
-          console.error('Error fetching GitHub data:', error);
-        }
-      }
-    }
-    fetchGithubData();
-  }, []);
-
-  const handleRepoSelect = async (repoFullName: string) => {
-    setSelectedRepo(repoFullName);
-
-    const repo = repositories.find(
-      (repo: RouterOutput['codeRepository']['getLatest']) =>
-        repo.owner_repo === repoFullName,
-    );
-    if (repo) {
-      createCodeRepository({
-        projectId: project.id,
-        owner: repo?.owner,
-        repo: repo?.name,
-      });
-    }
-    if (githubUser) {
-      const [owner, repo] = repoFullName.split('/');
-      const octokit = new Octokit({
-        auth: (await supabase.auth.getSession()).data.session?.provider_token,
-      });
-      try {
-        const [commitsResponse, issuesResponse, pullsResponse, repoResponse] =
-          await Promise.all([
-            octokit.rest.repos.listCommits({owner, repo, per_page: 1}),
-            octokit.rest.issues.listForRepo({owner, repo, state: 'open'}),
-            octokit.rest.pulls.list({owner, repo, state: 'open'}),
-            octokit.rest.repos.get({owner, repo}),
-          ]);
-
-        setLastCommit(commitsResponse.data[0]?.commit.message || 'No commits');
-        setOpenIssues(issuesResponse.data.length);
-        setPullRequests(pullsResponse.data.length);
-        setLastUpdated(new Date(repoResponse.data.updated_at));
-      } catch (error) {
-        console.error('Error fetching repo details:', error);
-      }
-    }
-  };
 
   const handleSave = async () => {
     const {error} = await supabase.from('projects').upsert(project);
@@ -398,7 +303,10 @@ export default function Project({project: serverProject}: {project: Project}) {
             </div>
           </CardContent>
         </Card>
-
+        <ConnectedRepository
+          projectId={project.id}
+          providerToken={providerToken}
+        />
         <Card>
           <CardHeader>
             <CardTitle>Kanban Board</CardTitle>
@@ -472,79 +380,6 @@ export default function Project({project: serverProject}: {project: Project}) {
                 </div>
               </DragDropContext>
             </ScrollArea>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Connected GitHub Repository</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Select
-                onValueChange={handleRepoSelect}
-                value={selectedRepo || undefined}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a repository" />
-                </SelectTrigger>
-                <SelectContent>
-                  {repositories.map((repo) => (
-                    <SelectItem key={repo.id} value={repo.full_name}>
-                      {repo.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedRepo && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
-                        <AvatarImage
-                          src={`https://github.com/${githubUser}.png`}
-                          alt="GitHub Avatar"
-                        />
-                        <AvatarFallback>GH</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold">{selectedRepo}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Last updated:{' '}
-                          {lastUpdated
-                            ? formatDistanceToNow(lastUpdated, {
-                                addSuffix: true,
-                              })
-                            : 'Unknown'}
-                        </p>
-                      </div>
-                    </div>
-                    <Link
-                      href={`https://github.com/${selectedRepo}`}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      <Button variant="outline">View Repository</Button>
-                    </Link>
-                  </div>
-                  <Separator className="my-4" />
-                  <div className="space-y-2">
-                    <p className="text-sm">
-                      <span className="font-semibold">Latest commit:</span>{' '}
-                      {lastCommit}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-semibold">Open issues:</span>{' '}
-                      {openIssues}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-semibold">Pull requests:</span>{' '}
-                      {pullRequests}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>

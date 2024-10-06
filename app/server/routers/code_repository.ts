@@ -9,10 +9,10 @@ export const codeRepositoryRouter = router({
     )
     .mutation(async ({ctx, input}) => {
       const {projectId, owner, repo} = input;
-      const owner_repo = `${owner}/${repo}`;
+      const full_name = `${owner}/${repo}`;
       const {data, error} = await ctx.db
         .from('code_repositories')
-        .insert({project_id: projectId, owner_repo});
+        .insert({project_id: projectId, full_name});
       if (error) {
         throw new Error(error.message);
       }
@@ -27,6 +27,7 @@ export const codeRepositoryRouter = router({
         .from('code_repositories')
         .select('*')
         .eq('project_id', projectId)
+        .limit(1)
         .maybeSingle();
       if (error) {
         throw new Error(error.message);

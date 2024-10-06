@@ -14,9 +14,15 @@ export default async function ProjectPage({
     .eq('id', params.projectId)
     .single();
 
+  const {
+    data: {session},
+  } = await supabase.auth.getSession();
+
+  const providerToken = session?.provider_token || null;
+
   if (!project) {
     return <div>Project not found</div>;
   }
 
-  return <Project project={project} />;
+  return <Project project={project} providerToken={providerToken} />;
 }
