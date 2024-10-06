@@ -13,7 +13,7 @@ import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {Input} from '@/components/ui/input';
-import {Send, Copy, User, Bot, Square} from 'lucide-react';
+import {Send, Copy, User, Bot, Square, RotateCw} from 'lucide-react';
 import Markdown from 'react-markdown';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -33,10 +33,17 @@ export default function ProjectChat({project}: ProjectChatProps) {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [lastHeight, setLastHeight] = useState<number | null>(null);
 
-  const {messages, input, handleInputChange, handleSubmit, isLoading, stop} =
-    useChat({
-      api: `/api/chat/${project?.id}`,
-    });
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    stop,
+    reload,
+  } = useChat({
+    api: `/api/chat/${project?.id}`,
+  });
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -98,7 +105,7 @@ export default function ProjectChat({project}: ProjectChatProps) {
               </p>
             </div>
           ) : (
-            filteredMessages.map((m) => (
+            filteredMessages.map((m, index) => (
               <Card key={m.id} className="mb-4 w-full shadow-md bg-zinc-800">
                 <CardContent className="p-4">
                   <div className="flex space-x-4">
@@ -243,6 +250,20 @@ export default function ProjectChat({project}: ProjectChatProps) {
                       </div>
                     </div>
                   </div>
+                  {m.role === 'assistant' &&
+                    index === filteredMessages.length - 1 && (
+                      <div className="flex justify-end mt-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="rounded-full hover:bg-zinc-700"
+                          onClick={() => reload()}
+                        >
+                          <RotateCw className="h-4 w-4 text-primary" />
+                          <span className="sr-only">Reload</span>
+                        </Button>
+                      </div>
+                    )}
                 </CardContent>
               </Card>
             ))
