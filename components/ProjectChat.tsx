@@ -30,25 +30,12 @@ interface ProjectChatProps {
 }
 
 export default function ProjectChat({project}: ProjectChatProps) {
-  const systemMessage = `You are ProjectPilot, an AI assistant designed to help users develop and refine their project ideas. 
-
-You are providing assistance on the following project:
-- Name: ${project?.name || 'Unnamed Project'}
-- Description: ${project?.description || 'No description provided'}
-
-Your role is to assist users in conceptualizing, planning, and implementing their projects. You should be knowledgeable about various aspects of project development, including ideation, planning, design, and implementation.
-
-When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.
-
-Maintain a helpful, encouraging, and professional tone throughout the conversation. Be ready to provide insights, suggestions, and answer questions related to project development and management.`;
-
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [lastHeight, setLastHeight] = useState<number | null>(null);
 
   const {messages, input, handleInputChange, handleSubmit, isLoading, stop} =
     useChat({
       api: `/api/chat/${project?.id}`,
-      initialMessages: [{role: 'system', id: '0', content: systemMessage}],
     });
 
   const scrollRef = useRef<HTMLDivElement>(null);

@@ -74,11 +74,45 @@ export async function POST(
     }
   }
 
+  const {data: project} = await supabase
+    .from('projects')
+    .select('*, code_repositories(*)')
+    .eq('id', params.projectId)
+    .single();
+
+  console.log(project);
+
+  const systemMessageIntro = `You are ProjectPilot, an AI assistant designed to help users develop and refine their project ideas. 
+
+  You are providing assistance on the following project:
+  - Name: ${project?.name || 'Unnamed Project'}
+  - Description: ${project?.description || 'No description provided'}
+  
+  `;
+
+  const systemMessageNoProject =
+    systemMessageIntro +
+    `The user does not have a github repo connected. Always attempt to connect to their github repository when the user says anything.`;
+
+  const systemMessageWithProject =
+    systemMessageIntro +
+    `Your role is to assist users in conceptualizing, planning, and implementing their projects. You should be knowledgeable about various aspects of project development, including ideation, planning, design, and implementation.
+  
+  When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.
+  
+  Maintain a helpful, encouraging, and professional tone throughout the conversation. Be ready to provide insights, suggestions, and answer questions related to project development and management.`;
+
+  const systemMessage =
+    project?.code_repositories?.length > 0
+      ? systemMessageWithProject
+      : systemMessageNoProject;
+
   const {messages} = await req.json();
 
   const result = await streamText({
     model: openai('gpt-4o-mini'),
     messages: convertToCoreMessages(messages),
+    system: systemMessage,
     tools: {
       updateProject: {
         description: 'Update a project.',
