@@ -13,6 +13,8 @@ import {
 import {Badge} from '@/components/ui/badge';
 import {CalendarIcon, ArrowRightIcon} from 'lucide-react';
 import {createClient} from '@/lib/supabase/client';
+import {useProjectStore} from '@/components/ProjectProvider';
+import {useRouter} from 'next/navigation';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -23,6 +25,8 @@ export default function ProjectList({
 }) {
   const [projects, setProjects] = useState(serverProjects);
   const supabase = createClient();
+  const {activeProjectId} = useProjectStore((state) => state);
+  const router = useRouter();
 
   useEffect(() => {
     setProjects(serverProjects);
@@ -58,6 +62,12 @@ export default function ProjectList({
       supabase.removeChannel(channel);
     };
   }, [serverProjects]);
+
+  if (activeProjectId) {
+    router.push(`/projects/${activeProjectId}`);
+    return <div>Remove me - blank screen for loading project page.</div>;
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(500px,1fr))] gap-6">
       {projects.length > 0 ? (

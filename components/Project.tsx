@@ -306,6 +306,7 @@ export default function Project({
         <ConnectedRepository
           projectId={project.id}
           providerToken={providerToken}
+          onSelect={() => {}}
         />
         <Card>
           <CardHeader>

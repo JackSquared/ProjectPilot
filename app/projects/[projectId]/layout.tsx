@@ -10,6 +10,12 @@ export default async function ProjectLayout({
 }) {
   const supabase = createClient();
 
+  const {
+    data: {session},
+  } = await supabase.auth.getSession();
+
+  const providerToken = session?.provider_token || null;
+
   const {data: project} = await supabase
     .from('projects')
     .select('*')
@@ -20,7 +26,7 @@ export default async function ProjectLayout({
     <div className="flex h-full">
       <div className="w-1/2 overflow-y-auto scrollbar-hide">{children}</div>
       <div className="w-1/2 border-l border-border">
-        <ProjectChat project={project} />
+        <ProjectChat project={project} providerToken={providerToken} />
       </div>
     </div>
   );

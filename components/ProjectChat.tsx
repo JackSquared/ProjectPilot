@@ -20,6 +20,7 @@ import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {Database} from '@/lib/supabase.types';
 import {ToolInvocation} from 'ai';
 import {LoadingSpinner} from './icons/LoadingSpinner';
+import ConnectedRepository from './ConnectedRepository';
 
 interface ScrollableElement extends Element {
   scrollTimeout?: number;
@@ -27,9 +28,13 @@ interface ScrollableElement extends Element {
 
 interface ProjectChatProps {
   project: Database['public']['Tables']['projects']['Row'] | null;
+  providerToken: string | null;
 }
 
-export default function ProjectChat({project}: ProjectChatProps) {
+export default function ProjectChat({
+  project,
+  providerToken,
+}: ProjectChatProps) {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [lastHeight, setLastHeight] = useState<number | null>(null);
 
@@ -41,6 +46,7 @@ export default function ProjectChat({project}: ProjectChatProps) {
     isLoading,
     stop,
     reload,
+    addToolResult,
   } = useChat({
     api: `/api/chat/${project?.id}`,
   });
@@ -161,6 +167,33 @@ export default function ProjectChat({project}: ProjectChatProps) {
                         </Markdown>
                         {m.toolInvocations?.map(
                           (toolInvocation: ToolInvocation) => {
+                            const toolCallId = toolInvocation.toolCallId;
+                            const addResult = (result: string) =>
+                              addToolResult({toolCallId, result});
+
+                            if (
+                              toolInvocation.toolName ===
+                              'connectGitHubRepository'
+                            ) {
+                              return (
+                                <div key={toolCallId}>
+                                  {toolInvocation.args.message}
+                                  <div>
+                                    {'result' in toolInvocation ? (
+                                      <b>{toolInvocation.result}</b>
+                                    ) : (
+                                      <div className="mt-4">
+                                        <ConnectedRepository
+                                          projectId={project?.id ?? 0}
+                                          providerToken={providerToken}
+                                          onSelect={addResult}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            }
                             if (toolInvocation.toolName === 'updateProject') {
                               return (
                                 <div

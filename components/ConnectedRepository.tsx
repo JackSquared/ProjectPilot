@@ -21,15 +21,19 @@ import {
 import {Check, ChevronsUpDown} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import {Repository, useGithubRepos, useGithubUser} from '@/hooks/useGitHub';
+import {getQueryKey} from '@trpc/react-query';
+import {useQueryClient} from '@tanstack/react-query';
 
 type ConnectedGitHubRepoProps = {
   projectId: number;
   providerToken: string | null;
+  onSelect: (repo: string) => void;
 };
 
 export default function ConnectedRepository({
   projectId,
   providerToken,
+  onSelect,
 }: ConnectedGitHubRepoProps) {
   const [lastCommit, setLastCommit] = useState<string | null>(null);
   const [openIssues, setOpenIssues] = useState<number | null>(null);
@@ -38,8 +42,14 @@ export default function ConnectedRepository({
   const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
   const [open, setOpen] = useState(false);
 
-  const {mutate: createCodeRepository} =
-    api.codeRepository.create.useMutation();
+  const queryClient = useQueryClient();
+
+  const {mutate: createCodeRepository} = api.codeRepository.create.useMutation({
+    onSuccess: () => {
+      const key = getQueryKey(api.codeRepository.getLatest, undefined, 'query');
+      queryClient.invalidateQueries({queryKey: key});
+    },
+  });
 
   const {data: codeRepository} = api.codeRepository.getLatest.useQuery({
     projectId: projectId,
@@ -80,6 +90,7 @@ export default function ConnectedRepository({
       );
       if (providerToken && repo) {
         setSelectedRepo(repo);
+        onSelect(repo.full_name);
         updateRepoDetails(repo);
       }
     }
@@ -111,6 +122,7 @@ export default function ConnectedRepository({
 
   const handleRepoSelect = async (repoInput: Repository) => {
     setSelectedRepo(repoInput);
+    onSelect(repoInput.full_name);
     setOpen(false);
 
     const repo = githubRepos?.find(
@@ -122,7 +134,6 @@ export default function ConnectedRepository({
         owner: repo.owner.login,
         repo: repo.name,
       });
-
       if (providerToken) {
         const octokit = new Octokit({auth: providerToken});
         try {

@@ -18,8 +18,8 @@ import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {Copy} from 'lucide-react';
 import {User} from '@supabase/supabase-js';
-import {useRouter} from 'next/navigation';
 import {ToolInvocation} from 'ai';
+import {useProjectStore} from '@/components/ProjectProvider';
 interface ScrollableElement extends Element {
   scrollTimeout?: number;
 }
@@ -33,9 +33,10 @@ I will assume you are starting from a fresh idea so it is best for you to start 
 However, if you have already made decisions about implementation then feel free to give me those details.`;
 
 export default function Chat({user}: {user: User}) {
-  const router = useRouter();
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [lastHeight, setLastHeight] = useState<number | null>(null);
+
+  const {setActiveProjectId} = useProjectStore((state) => state);
 
   const {messages, input, handleInputChange, handleSubmit} = useChat({
     maxSteps: 5,
@@ -46,7 +47,7 @@ export default function Chat({user}: {user: User}) {
     async onToolCall({toolCall}) {
       if (toolCall.toolName === 'openProject') {
         const {id} = toolCall.args as {id: string};
-        router.push(`/projects/${id}`);
+        setActiveProjectId(parseInt(id));
         return 'Project opened';
       }
     },

@@ -5,6 +5,8 @@ import {cn} from '@/lib/utils';
 import {HeaderBar} from '@/components/HeaderBar';
 import {createClient} from '@/lib/supabase/server';
 import TRPCProvider from './_trpc/TRPCProvider';
+import CollapsibleChat from '@/components/CollapsibleChat';
+import {ProjectStoreProvider} from '@/components/ProjectProvider';
 
 const inter = Inter({subsets: ['latin']});
 
@@ -33,8 +35,11 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <TRPCProvider>
-            <HeaderBar session={session} />
-            <main className="flex-grow overflow-hidden">{children}</main>
+            <ProjectStoreProvider>
+              <HeaderBar session={session} />
+              <main className="flex-grow overflow-hidden">{children}</main>
+              {session?.user && <CollapsibleChat user={session.user} />}
+            </ProjectStoreProvider>
           </TRPCProvider>
         </ThemeProvider>
       </body>

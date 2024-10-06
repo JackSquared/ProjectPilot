@@ -80,8 +80,6 @@ export async function POST(
     .eq('id', params.projectId)
     .single();
 
-  console.log(project);
-
   const systemMessageIntro = `You are ProjectPilot, an AI assistant designed to help users develop and refine their project ideas. 
 
   You are providing assistance on the following project:
@@ -92,7 +90,7 @@ export async function POST(
 
   const systemMessageNoProject =
     systemMessageIntro +
-    `The user does not have a github repo connected. Always attempt to connect to their github repository when the user says anything.`;
+    `The user does not have a github repo connected. You will connect to a github repo before responding to any user messages.`;
 
   const systemMessageWithProject =
     systemMessageIntro +
@@ -114,6 +112,14 @@ export async function POST(
     messages: convertToCoreMessages(messages),
     system: systemMessage,
     tools: {
+      connectGitHubRepository: {
+        description: 'Connect a GitHub repository to a project.',
+        parameters: z.object({
+          message: z
+            .string()
+            .describe('The message to ask to connect a GitHub repository'),
+        }),
+      },
       updateProject: {
         description: 'Update a project.',
         parameters: z.object({
