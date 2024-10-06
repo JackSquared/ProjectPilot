@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.code_repositories(
     FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE CASCADE
 );
 
-ALTER TABLE public.github_repositories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.code_repositories ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can manage repositories in their projects" ON code_repositories
     FOR ALL
