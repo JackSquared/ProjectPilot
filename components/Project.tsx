@@ -22,6 +22,7 @@ import {api} from '@/app/_trpc/client';
 import ConnectedRepository from './ConnectedRepository';
 import {useMediaQuery} from 'react-responsive';
 import {cn} from '@/lib/utils';
+import {Textarea} from './ui/textarea';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -243,15 +244,21 @@ export default function Project({
     >
       <div className="h-full p-6">
         <div className="space-y-6">
-          <Card className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Avatar className="w-16 h-16">
-                <AvatarImage
-                  src="/placeholder.svg?height=64&width=64"
-                  alt="Project Icon"
-                />
-                <AvatarFallback>PI</AvatarFallback>
-              </Avatar>
+          <Card>
+            <div className="p-4 relative">
+              <div className="absolute top-4 right-4">
+                {isEditing ? (
+                  <Button variant="ghost" onClick={handleSave}>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save
+                  </Button>
+                ) : (
+                  <Button variant="ghost" onClick={() => setIsEditing(true)}>
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit
+                  </Button>
+                )}
+              </div>
               <div>
                 {isEditing ? (
                   <Input
@@ -259,15 +266,15 @@ export default function Project({
                     onChange={(e) =>
                       setProject({...project, name: e.target.value})
                     }
-                    className="text-3xl font-bold text-primary"
+                    className="text-3xl font-bold text-primary mb-2"
                   />
                 ) : (
-                  <h1 className="text-3xl font-bold text-primary">
+                  <h1 className="text-3xl font-bold text-primary mb-2">
                     {project.name}
                   </h1>
                 )}
                 {isEditing ? (
-                  <Input
+                  <Textarea
                     value={project.description || ''}
                     onChange={(e) =>
                       setProject({...project, description: e.target.value})
@@ -279,17 +286,6 @@ export default function Project({
                 )}
               </div>
             </div>
-            {isEditing ? (
-              <Button variant="ghost" onClick={handleSave}>
-                <Save className="w-4 h-4 mr-2" />
-                Save
-              </Button>
-            ) : (
-              <Button variant="ghost" onClick={() => setIsEditing(true)}>
-                <Pencil className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
-            )}
           </Card>
 
           {error && <div className="text-red-500">{error}</div>}
