@@ -18,7 +18,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {ChevronsUpDown} from 'lucide-react';
+import {ChevronsUpDown, ExternalLink} from 'lucide-react';
 import {Repository, useGithubRepos, useGithubUser} from '@/hooks/useGitHub';
 import {getQueryKey} from '@trpc/react-query';
 import {useQueryClient} from '@tanstack/react-query';
@@ -202,7 +202,7 @@ export default function ConnectedRepository({
             </Popover>
           ) : (
             <>
-              <div className="flex items-center justify-between">
+              <div className="relative">
                 <div className="flex items-center space-x-4">
                   <Avatar>
                     {isLoadingUser ? (
@@ -219,7 +219,24 @@ export default function ConnectedRepository({
                     )}
                   </Avatar>
                   <div>
-                    <p className="font-semibold">{selectedRepo.full_name}</p>
+                    <div className="relative">
+                      <p className="font-semibold">{selectedRepo.full_name}</p>
+                      <Link
+                        href={`https://github.com/${selectedRepo.full_name}`}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        className="absolute top-[-7px] right-[-15px]"
+                      >
+                        <Button
+                          variant="ghost"
+                          className="hover:bg-transparent"
+                          size="icon"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          <span className="sr-only">View Repository</span>
+                        </Button>
+                      </Link>
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       Last updated:{' '}
                       {lastUpdated
@@ -245,15 +262,6 @@ export default function ConnectedRepository({
                   <span className="font-semibold">Pull requests:</span>{' '}
                   {pullRequests}
                 </p>
-                <Link
-                  href={`https://github.com/${selectedRepo.full_name}`}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  <Button className="w-full mt-4" variant="outline">
-                    View Repository
-                  </Button>
-                </Link>
               </div>
             </>
           )}
