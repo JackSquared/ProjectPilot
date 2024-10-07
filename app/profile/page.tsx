@@ -8,7 +8,6 @@ import {
   CardHeader,
 } from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
-import {ConnectGithub} from '@/components/ConnectGithub';
 import {logout} from '@/app/actions/auth';
 
 export default async function Profile() {
@@ -22,7 +21,6 @@ export default async function Profile() {
   if (!user) {
     redirect('/sign-in');
   }
-  const isGithubConnected = user.app_metadata?.providers?.includes('github');
 
   return (
     <Card className="container mx-auto">
@@ -37,7 +35,6 @@ export default async function Profile() {
         </code>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <ConnectGithub connected={isGithubConnected} />
         <form action={logout}>
           <Button type="submit">Logout</Button>
         </form>
