@@ -18,8 +18,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {Check, ChevronsUpDown} from 'lucide-react';
-import {cn} from '@/lib/utils';
+import {ChevronsUpDown} from 'lucide-react';
 import {Repository, useGithubRepos, useGithubUser} from '@/hooks/useGitHub';
 import {getQueryKey} from '@trpc/react-query';
 import {useQueryClient} from '@tanstack/react-query';
@@ -168,9 +167,7 @@ export default function ConnectedRepository({
                   aria-expanded={open}
                   className="w-full"
                 >
-                  {selectedRepo
-                    ? selectedRepo.full_name
-                    : 'Select a repository'}
+                  Select a repository
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -192,14 +189,6 @@ export default function ConnectedRepository({
                             key={repo.id}
                             onSelect={() => handleRepoSelect(repo)}
                           >
-                            <Check
-                              className={cn(
-                                'mr-2 h-4 w-4',
-                                selectedRepo?.full_name === repo.full_name
-                                  ? 'opacity-100'
-                                  : 'opacity-0',
-                              )}
-                            />
                             {repo.full_name}
                           </CommandItem>
                         ))
