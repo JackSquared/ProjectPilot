@@ -38,7 +38,7 @@ export default async function RootLayout({
           <TRPCProvider>
             <ProjectStoreProvider>
               <HeaderBar session={session} />
-              <main className="flex-grow overflow-hidden relative">
+              <main className="flex-grow overflow-scroll scrollbar-hide relative">
                 {children}
                 {session?.user && (
                   <Chat providerToken={session.provider_token ?? null} />

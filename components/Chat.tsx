@@ -135,9 +135,6 @@ export default function Chat({providerToken}: CombinedChatProps) {
 
   const minimizeChat = () => {
     setChatState('minimized');
-    if (isProjectPage && !isMobile) {
-      router.push('/');
-    }
   };
 
   const toggleChatVisibility = () => {
@@ -201,24 +198,33 @@ export default function Chat({providerToken}: CombinedChatProps) {
               <CardTitle className="text-2xl font-semibold text-primary flex justify-between items-center">
                 Project Assistant
                 <div className="flex space-x-2">
-                  {chatState === 'expanded' ? (
+                  {chatState === 'expanded' && !isProjectPage ? (
                     <Button onClick={minimizeChat} size="icon" variant="ghost">
                       <Minimize2 className="h-4 w-4" />
                     </Button>
                   ) : (
-                    <Button onClick={expandChat} size="icon" variant="ghost">
-                      <Maximize2 className="h-4 w-4" />
-                    </Button>
+                    <>
+                      {!isMobile && !isProjectPage && (
+                        <Button
+                          onClick={expandChat}
+                          size="icon"
+                          variant="ghost"
+                        >
+                          <Maximize2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </>
                   )}
-                  {!isProjectPage && (
-                    <Button
-                      onClick={toggleChatVisibility}
-                      size="icon"
-                      variant="ghost"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
+                  {!isProjectPage ||
+                    (isMobile && (
+                      <Button
+                        onClick={toggleChatVisibility}
+                        size="icon"
+                        variant="ghost"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    ))}
                 </div>
               </CardTitle>
             </CardHeader>
