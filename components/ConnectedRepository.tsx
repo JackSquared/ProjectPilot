@@ -5,7 +5,7 @@ import {Octokit} from 'octokit';
 import {formatDistanceToNow} from 'date-fns';
 import Link from 'next/link';
 import {api} from '@/app/_trpc/client';
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Card, CardContent, CardHeader} from '@/components/ui/card';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {Button} from '@/components/ui/button';
 import {Separator} from '@/components/ui/separator';
