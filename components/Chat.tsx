@@ -228,16 +228,15 @@ export default function Chat({providerToken}: CombinedChatProps) {
                         )}
                       </>
                     )}
-                    {!isProjectPage ||
-                      (isMobile && (
-                        <Button
-                          onClick={toggleChatVisibility}
-                          size="icon"
-                          variant="ghost"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      ))}
+                    {(isMobile || !isProjectPage) && (
+                      <Button
+                        onClick={toggleChatVisibility}
+                        size="icon"
+                        variant="ghost"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </CardTitle>
               </CardHeader>
