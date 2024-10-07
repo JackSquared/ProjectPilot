@@ -37,6 +37,7 @@ export async function loginWithGithub() {
     provider: 'github',
     options: {
       redirectTo: `${host}/auth/callback`,
+      scopes: 'repo',
     },
   });
   if (error) {

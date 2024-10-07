@@ -2,6 +2,7 @@
 
 import React, {useRef, useEffect, useState} from 'react';
 import {useChat} from 'ai/react';
+import {motion, AnimatePresence} from 'framer-motion';
 import {
   Card,
   CardContent,
@@ -16,38 +17,66 @@ import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import Markdown from 'react-markdown';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
-import {Copy} from 'lucide-react';
-import {User} from '@supabase/supabase-js';
+import {
+  Copy,
+  User,
+  Bot,
+  Square,
+  RotateCw,
+  Maximize2,
+  Minimize2,
+  MessageCircle,
+  X,
+} from 'lucide-react';
+import {User as SupabaseUser} from '@supabase/supabase-js';
 import {ToolInvocation} from 'ai';
-import {useProjectStore} from '@/components/ProjectProvider';
+import {Database} from '@/lib/supabase.types';
+import {usePathname, useRouter} from 'next/navigation';
+import ConnectedRepository from './ConnectedRepository';
+
 interface ScrollableElement extends Element {
   scrollTimeout?: number;
 }
 
-const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
-When you write markdown code blocks, always ensure there is a new line between the code block and the text preceding it.`;
+interface CombinedChatProps {
+  providerToken: string | null;
+}
 
-const openingMessage = `Hello! I am ProjectPilot, an AI that empowers people to build their ideas.
-Let's have a conversation about your idea so that I can get on the same page as you and then we can discuss how we can make it a reality.
-I will assume you are starting from a fresh idea so it is best for you to start with a high level concept for your idea.
-However, if you have already made decisions about implementation then feel free to give me those details.`;
-
-export default function Chat({user}: {user: User}) {
+export default function Chat({providerToken}: CombinedChatProps) {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [lastHeight, setLastHeight] = useState<number | null>(null);
+  const [chatState, setChatState] = useState<'minimized' | 'expanded'>(
+    'minimized',
+  );
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [isChatVisible, setIsChatVisible] = useState(true);
 
-  const {setActiveProjectId} = useProjectStore((state) => state);
+  const pathname = usePathname();
+  const router = useRouter();
 
-  const {messages, input, handleInputChange, handleSubmit} = useChat({
-    maxSteps: 5,
-    initialMessages: [
-      {role: 'system', id: '0', content: systemMessage},
-      {role: 'assistant', id: '1', content: openingMessage},
-    ],
+  const isProjectPage = /^\/projects\/[^/]+$/.test(pathname);
+  const projectId = pathname.split('/')[2];
+
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    stop,
+    reload,
+    addToolResult,
+  } = useChat({
+    api: isProjectPage && projectId ? `/api/chat/${projectId}` : '/api/chat',
+    maxSteps: 3,
     async onToolCall({toolCall}) {
       if (toolCall.toolName === 'openProject') {
         const {id} = toolCall.args as {id: string};
-        setActiveProjectId(parseInt(id));
+        setIsNavigating(true);
+        setChatState('expanded');
+        setTimeout(() => {
+          router.push(`/projects/${id}`);
+        }, 300);
         return 'Project opened';
       }
     },
@@ -67,9 +96,17 @@ export default function Chat({user}: {user: User}) {
 
     if (!isUserScrolling && scrollTop + clientHeight >= scrollHeight - 100) {
       scrollElement.scrollTop = scrollHeight;
-      return;
     }
   }, [messages, isUserScrolling, lastHeight]);
+
+  useEffect(() => {
+    if (isProjectPage) {
+      setChatState('expanded');
+      setIsChatVisible(true);
+    } else {
+      setChatState('minimized');
+    }
+  }, [pathname, isNavigating, isProjectPage]);
 
   const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const scrollElement = event.target as HTMLDivElement;
@@ -82,7 +119,6 @@ export default function Chat({user}: {user: User}) {
   const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     setIsUserScrolling(true);
 
-    // debounce
     const target = event.currentTarget as ScrollableElement;
     clearTimeout(target.scrollTimeout);
     target.scrollTimeout = window.setTimeout(() => {
@@ -90,158 +126,406 @@ export default function Chat({user}: {user: User}) {
     }, 150);
   };
 
-  return (
-    <Card className="w-full h-full flex flex-col">
-      <CardHeader>
-        <CardTitle>Project Assistant</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-grow overflow-hidden">
-        <ScrollArea
-          onScroll={onScroll}
-          onWheel={onWheel}
-          ref={scrollRef}
-          className="h-full pr-4"
-        >
-          {messages.map((m) => {
-            if (m.role === 'system') return null;
+  const toggleChat = () => {
+    setChatState((prevState) =>
+      prevState === 'minimized' ? 'expanded' : 'minimized',
+    );
+  };
 
-            return (
-              <div
-                key={m.id}
-                className={`flex ${
-                  m.role === 'user' ? 'justify-start' : 'justify-center'
-                } mb-4`}
+  const expandChat = () => {
+    setChatState('expanded');
+  };
+
+  const minimizeChat = () => {
+    setChatState('minimized');
+    if (isProjectPage) {
+      router.push('/');
+    }
+  };
+
+  const toggleChatVisibility = () => {
+    setIsChatVisible((prev) => !prev);
+    if (isChatVisible) {
+      setChatState('minimized');
+    }
+  };
+
+  const filteredMessages = messages.filter((m) => m.role !== 'system');
+
+  const variants = {
+    minimized: {
+      width: '25vw',
+      height: '50vh',
+      opacity: 1,
+      scale: 1,
+      x: 0,
+      y: 0,
+    },
+    expanded: {
+      width: '50vw',
+      height: '92vh',
+      opacity: 1,
+      scale: 1,
+      x: 0,
+      y: 0,
+    },
+  };
+
+  return (
+    <AnimatePresence>
+      {isChatVisible && (
+        <motion.div
+          layout
+          initial={
+            chatState === 'minimized' ? variants.minimized : variants.expanded
+          }
+          animate={
+            chatState === 'minimized' ? variants.minimized : variants.expanded
+          }
+          exit={{opacity: 0, scale: 0.8, x: '100%', y: '100%'}}
+          transition={{type: 'spring', stiffness: 300, damping: 30}}
+          className="fixed bottom-4 right-4 bg-zinc-900 rounded-lg shadow-lg overflow-hidden flex border-2 border-primary"
+          style={{
+            maxWidth: chatState === 'expanded' ? 'calc(100vw - 2rem)' : '50rem',
+            minWidth: chatState === 'minimized' ? '30rem' : 'auto',
+            transformOrigin: 'bottom right',
+          }}
+        >
+          <Card className="w-full h-full flex flex-col rounded-none border-0">
+            <CardHeader className="border-b border-border/20">
+              <CardTitle className="text-2xl font-semibold text-primary flex justify-between items-center">
+                Project Assistant
+                <div className="flex space-x-2">
+                  {chatState === 'expanded' ? (
+                    <Button onClick={minimizeChat} size="icon" variant="ghost">
+                      <Minimize2 className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button onClick={expandChat} size="icon" variant="ghost">
+                      <Maximize2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {!isProjectPage && (
+                    <Button
+                      onClick={toggleChatVisibility}
+                      size="icon"
+                      variant="ghost"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow p-0 overflow-hidden flex flex-col relative">
+              <ScrollArea
+                className="flex-grow p-6"
+                onScroll={onScroll}
+                onWheel={onWheel}
+                ref={scrollRef}
               >
-                {m.role === 'user' ? (
-                  <div className="flex flex-row items-center bg-[#005246] rounded-lg p-2">
-                    <Avatar className="w-8 h-8 mr-2">
-                      <AvatarFallback className="bg-[#EC9C5D] text-black font-bold">
-                        {user?.user_metadata?.['first_name'][0]}
-                        {user?.user_metadata?.['last_name'][0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-grow pr-4">
-                      <Markdown
-                        components={{
-                          code({className, children, ...props}) {
-                            const match = /language-(\w+)/.exec(
-                              className || '',
-                            );
-                            const codeString = String(children).replace(
-                              /\n$/,
-                              '',
-                            );
-                            return match ? (
-                              <div className="relative">
-                                <SyntaxHighlighter
-                                  // @ts-expect-error style
-                                  style={vscDarkPlus}
-                                  wrapLongLines
-                                  language={match[1]}
-                                  PreTag="div"
-                                  {...props}
-                                >
-                                  {codeString}
-                                </SyntaxHighlighter>
-                                <Copy
-                                  className="absolute top-2 right-2 cursor-pointer"
-                                  onClick={() =>
-                                    navigator.clipboard.writeText(codeString)
-                                  }
-                                />
-                              </div>
-                            ) : (
-                              <code className={className} {...props}>
-                                {children}
-                              </code>
-                            );
-                          },
-                        }}
-                      >
-                        {m.content}
-                      </Markdown>
-                    </div>
+                {filteredMessages.length === 0 ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <p className="text-xl text-muted-foreground">
+                      What do you want to work on?
+                    </p>
                   </div>
                 ) : (
-                  <>
-                    {m.toolInvocations?.map(
-                      (toolInvocation: ToolInvocation) => {
-                        if (toolInvocation.toolName === 'openProject') {
-                          return (
-                            <div
-                              className="p-3 rounded-lg text-center bg-primary w-full"
-                              key={toolInvocation.toolCallId}
-                            >
-                              {'result' in toolInvocation && (
-                                <b>{toolInvocation.result}</b>
-                              )}
-                            </div>
-                          );
-                        }
-                        return null;
-                      },
-                    )}
-                    {!m.toolInvocations && (
-                      <div className="p-3 rounded-lg bg-secondary w-full">
-                        <Markdown
-                          components={{
-                            code({className, children, ...props}) {
-                              const match = /language-(\w+)/.exec(
-                                className || '',
-                              );
-                              const codeString = String(children).replace(
-                                /\n$/,
-                                '',
-                              );
-                              return match ? (
-                                <div className="relative">
-                                  <SyntaxHighlighter
-                                    // @ts-expect-error style
-                                    style={vscDarkPlus}
-                                    language={match[1]}
-                                    wrapLongLines
-                                    PreTag="div"
-                                    {...props}
-                                  >
-                                    {codeString}
-                                  </SyntaxHighlighter>
-                                  <Copy
-                                    className="absolute top-2 right-2 cursor-pointer"
-                                    onClick={() =>
-                                      navigator.clipboard.writeText(codeString)
-                                    }
-                                  />
-                                </div>
-                              ) : (
-                                <code className={className} {...props}>
-                                  {children}
-                                </code>
-                              );
-                            },
-                          }}
+                  filteredMessages.map((m, index) => (
+                    <>
+                      {!m.toolInvocations && (
+                        <Card
+                          key={m.id}
+                          className="mb-4 w-full shadow-md bg-zinc-800"
                         >
-                          {m.content}
-                        </Markdown>
-                      </div>
-                    )}
-                  </>
+                          <CardContent className="p-4">
+                            <div className="flex space-x-4">
+                              <Avatar className="w-8 h-8 shadow-sm flex-shrink-0">
+                                <AvatarFallback className="bg-secondary text-secondary-foreground">
+                                  {m.role === 'user' ? (
+                                    <User className="w-4 h-4" />
+                                  ) : (
+                                    <Bot className="w-4 h-4" />
+                                  )}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-grow">
+                                <div className="rounded-lg text-zinc-100 mt-1">
+                                  {m.content && (
+                                    <Markdown
+                                      components={{
+                                        code({className, children, ...props}) {
+                                          const match = /language-(\w+)/.exec(
+                                            className || '',
+                                          );
+                                          const codeString = String(
+                                            children,
+                                          ).replace(/\n$/, '');
+                                          return match ? (
+                                            <div className="relative my-4">
+                                              <SyntaxHighlighter
+                                                style={vscDarkPlus}
+                                                wrapLongLines
+                                                language={match[1]}
+                                                PreTag="div"
+                                                {...props}
+                                              >
+                                                {codeString}
+                                              </SyntaxHighlighter>
+                                              <Copy
+                                                className="absolute top-2 right-2 cursor-pointer text-zinc-400 hover:text-zinc-200"
+                                                onClick={() =>
+                                                  navigator.clipboard.writeText(
+                                                    codeString,
+                                                  )
+                                                }
+                                              />
+                                            </div>
+                                          ) : (
+                                            <code
+                                              className={className}
+                                              {...props}
+                                            >
+                                              {children}
+                                            </code>
+                                          );
+                                        },
+                                      }}
+                                    >
+                                      {m.content}
+                                    </Markdown>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            {m.role === 'assistant' &&
+                              index === filteredMessages.length - 1 && (
+                                <div className="flex justify-end mt-2">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="rounded-full hover:bg-zinc-700"
+                                    onClick={() => reload()}
+                                  >
+                                    <RotateCw className="h-4 w-4 text-primary" />
+                                    <span className="sr-only">Reload</span>
+                                  </Button>
+                                </div>
+                              )}
+                          </CardContent>
+                        </Card>
+                      )}
+                      {m.toolInvocations?.map(
+                        (toolInvocation: ToolInvocation) => {
+                          const toolCallId = toolInvocation.toolCallId;
+                          const addResult = (result: string) =>
+                            addToolResult({toolCallId, result});
+
+                          if (
+                            toolInvocation.toolName ===
+                            'connectGitHubRepository'
+                          ) {
+                            return (
+                              <div key={toolCallId}>
+                                {toolInvocation.args.message}
+                                <div>
+                                  {'result' in toolInvocation ? (
+                                    <b>{toolInvocation.result}</b>
+                                  ) : (
+                                    <div className="mt-4">
+                                      <ConnectedRepository
+                                        projectId={parseInt(projectId)}
+                                        providerToken={providerToken}
+                                        onSelect={addResult}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          }
+                          if (toolInvocation.toolName === 'updateProject') {
+                            return (
+                              <div
+                                className="p-3 rounded-lg text-center w-full"
+                                key={toolInvocation.toolCallId}
+                              >
+                                {'result' in toolInvocation && (
+                                  <>
+                                    <p>
+                                      <b>Name:</b> {toolInvocation.result.name}
+                                    </p>
+                                    <p>
+                                      <b>Description:</b>{' '}
+                                      {toolInvocation.result.description}
+                                    </p>
+                                  </>
+                                )}
+                              </div>
+                            );
+                          }
+                          if (toolInvocation.toolName === 'addTask') {
+                            return (
+                              <div
+                                className="p-3 rounded-lg text-center w-full"
+                                key={toolInvocation.toolCallId}
+                              >
+                                {'result' in toolInvocation && (
+                                  <>
+                                    <p>
+                                      <b>Title:</b>{' '}
+                                      {toolInvocation.result.title}
+                                    </p>
+                                    <p>
+                                      <b>Description:</b>{' '}
+                                      {toolInvocation.result.description}
+                                    </p>
+                                    <p>
+                                      <b>Status:</b>{' '}
+                                      {toolInvocation.result.status}
+                                    </p>
+                                  </>
+                                )}
+                              </div>
+                            );
+                          }
+                          if (toolInvocation.toolName === 'updateTechStack') {
+                            return (
+                              <div
+                                className="p-3 rounded-lg text-center w-full"
+                                key={toolInvocation.toolCallId}
+                              >
+                                {'result' in toolInvocation && (
+                                  <>
+                                    {toolInvocation.result.server_tags &&
+                                      toolInvocation.result.server_tags.length >
+                                        0 && (
+                                        <p>
+                                          <b>Server Tags:</b>{' '}
+                                          {toolInvocation.result.server_tags}
+                                        </p>
+                                      )}
+                                    {toolInvocation.result.client_tags &&
+                                      toolInvocation.result.client_tags.length >
+                                        0 && (
+                                        <p>
+                                          <b>Client Tags:</b>{' '}
+                                          {toolInvocation.result.client_tags}
+                                        </p>
+                                      )}
+                                    {toolInvocation.result.ops_tags &&
+                                      toolInvocation.result.ops_tags.length >
+                                        0 && (
+                                        <p>
+                                          <b>DevOps Tags:</b>{' '}
+                                          {toolInvocation.result.ops_tags}
+                                        </p>
+                                      )}
+                                  </>
+                                )}
+                              </div>
+                            );
+                          }
+                          return null;
+                        },
+                      )}
+                      {/* {!m.toolInvocations && m.role === 'assistant' && (
+                        <div className="p-3 rounded-lg bg-secondary w-full">
+                          <Markdown
+                            components={{
+                              code({className, children, ...props}) {
+                                const match = /language-(\w+)/.exec(
+                                  className || '',
+                                );
+                                const codeString = String(children).replace(
+                                  /\n$/,
+                                  '',
+                                );
+                                return match ? (
+                                  <div className="relative">
+                                    <SyntaxHighlighter
+                                      // @ts-expect-error style
+                                      style={vscDarkPlus}
+                                      language={match[1]}
+                                      wrapLongLines
+                                      PreTag="div"
+                                      {...props}
+                                    >
+                                      {codeString}
+                                    </SyntaxHighlighter>
+                                    <Copy
+                                      className="absolute top-2 right-2 cursor-pointer"
+                                      onClick={() =>
+                                        navigator.clipboard.writeText(
+                                          codeString,
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                ) : (
+                                  <code className={className} {...props}>
+                                    {children}
+                                  </code>
+                                );
+                              },
+                            }}
+                          >
+                            {m.content}
+                          </Markdown>
+                        </div>
+                      )} */}
+                    </>
+                  ))
                 )}
-              </div>
-            );
-          })}
-        </ScrollArea>
-      </CardContent>
-      <CardFooter>
-        <form onSubmit={handleSubmit} className="flex w-full space-x-2">
-          <Input
-            className="flex-grow"
-            value={input}
-            placeholder="Type your message..."
-            onChange={handleInputChange}
-          />
-          <Button type="submit">Send</Button>
-        </form>
-      </CardFooter>
-    </Card>
+              </ScrollArea>
+            </CardContent>
+            <CardFooter className="p-4 border-t border-border/20">
+              <form onSubmit={handleSubmit} className="flex w-full space-x-2">
+                <Input
+                  className="flex-grow bg-zinc-800 border-0 focus-visible:ring-1 focus-visible:ring-primary/50 rounded-full text-zinc-100"
+                  value={input}
+                  placeholder="Type your message..."
+                  onChange={handleInputChange}
+                />
+                {isLoading ? (
+                  <div className="flex space-x-2 items-center">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="rounded-full hover:bg-zinc-700"
+                      onClick={() => stop()}
+                    >
+                      <Square className="h-5 w-5 text-primary" />
+                      <span className="sr-only">Stop</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="submit"
+                    size="icon"
+                    variant="ghost"
+                    className="rounded-full hover:bg-zinc-700"
+                  >
+                    <MessageCircle className="h-5 w-5 text-primary" />
+                    <span className="sr-only">Send</span>
+                  </Button>
+                )}
+              </form>
+            </CardFooter>
+          </Card>
+        </motion.div>
+      )}
+      {!isChatVisible && (
+        <Button
+          onClick={toggleChatVisibility}
+          size="icon"
+          className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg fixed bottom-4 right-4 border-2 border-primary-foreground"
+        >
+          <Bot className="h-6 w-6 text-primary-foreground" />
+        </Button>
+      )}
+    </AnimatePresence>
   );
 }

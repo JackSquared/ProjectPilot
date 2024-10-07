@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {ConnectGithub} from '@/components/ConnectGithub';
-import {logout} from '../../actions/auth';
+import {logout} from '@/app/actions/auth';
 
 export default async function Profile() {
   const supabase = createClient();

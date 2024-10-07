@@ -28,9 +28,13 @@ export async function POST(req: Request) {
 
   const {messages} = await req.json();
 
+  const systemMessage = `You are ProjectPilot, an AI that empowers people to build their ideas.
+Create the project as soon as you have a name and description.`;
+
   const result = await streamText({
     model: openai('gpt-4o-mini'),
     messages: convertToCoreMessages(messages),
+    system: systemMessage,
     tools: {
       createProject: {
         description: 'Create a new project.',
@@ -52,7 +56,7 @@ export async function POST(req: Request) {
         },
       },
       openProject: {
-        description: 'Open a project. Always open a project after creating it.',
+        description: 'Open a project. Always open a project after creating it',
         parameters: z.object({
           id: z.string().describe('The id of the project to open'),
         }),
