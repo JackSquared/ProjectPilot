@@ -22,24 +22,6 @@ export default async function RootLayout({
 }) {
   const supabase = createClient();
 
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session && session.provider_token) {
-      console.log('oauth_provider_token', session.provider_token);
-    }
-
-    if (session && session.provider_refresh_token) {
-      console.log(
-        'oauth_provider_refresh_token',
-        session.provider_refresh_token,
-      );
-    }
-
-    // if (event === 'SIGNED_OUT') {
-    //   window.localStorage.removeItem('oauth_provider_token');
-    //   window.localStorage.removeItem('oauth_provider_refresh_token');
-    // }
-  });
-
   const {
     data: {session},
   } = await supabase.auth.getSession();

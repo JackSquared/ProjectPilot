@@ -28,9 +28,7 @@ import {
   MessageCircle,
   X,
 } from 'lucide-react';
-import {User as SupabaseUser} from '@supabase/supabase-js';
 import {ToolInvocation} from 'ai';
-import {Database} from '@/lib/supabase.types';
 import {usePathname, useRouter} from 'next/navigation';
 import ConnectedRepository from './ConnectedRepository';
 
@@ -126,12 +124,6 @@ export default function Chat({providerToken}: CombinedChatProps) {
     }, 150);
   };
 
-  const toggleChat = () => {
-    setChatState((prevState) =>
-      prevState === 'minimized' ? 'expanded' : 'minimized',
-    );
-  };
-
   const expandChat = () => {
     setChatState('expanded');
   };
@@ -184,7 +176,7 @@ export default function Chat({providerToken}: CombinedChatProps) {
           }
           exit={{opacity: 0, scale: 0.8, x: '100%', y: '100%'}}
           transition={{type: 'spring', stiffness: 300, damping: 30}}
-          className="fixed bottom-4 right-4 bg-zinc-900 rounded-lg shadow-lg overflow-hidden flex border-2 border-primary"
+          className="fixed bottom-4 right-4 bg-zinc-900 rounded-lg shadow-lg overflow-hidden flex border-2 border-primary/20"
           style={{
             maxWidth: chatState === 'expanded' ? 'calc(100vw - 2rem)' : '50rem',
             minWidth: chatState === 'minimized' ? '30rem' : 'auto',
@@ -264,6 +256,7 @@ export default function Chat({providerToken}: CombinedChatProps) {
                                           return match ? (
                                             <div className="relative my-4">
                                               <SyntaxHighlighter
+                                                // @ts-expect-error - no types for react-syntax-highlighter
                                                 style={vscDarkPlus}
                                                 wrapLongLines
                                                 language={match[1]}
@@ -429,51 +422,6 @@ export default function Chat({providerToken}: CombinedChatProps) {
                           return null;
                         },
                       )}
-                      {/* {!m.toolInvocations && m.role === 'assistant' && (
-                        <div className="p-3 rounded-lg bg-secondary w-full">
-                          <Markdown
-                            components={{
-                              code({className, children, ...props}) {
-                                const match = /language-(\w+)/.exec(
-                                  className || '',
-                                );
-                                const codeString = String(children).replace(
-                                  /\n$/,
-                                  '',
-                                );
-                                return match ? (
-                                  <div className="relative">
-                                    <SyntaxHighlighter
-                                      // @ts-expect-error style
-                                      style={vscDarkPlus}
-                                      language={match[1]}
-                                      wrapLongLines
-                                      PreTag="div"
-                                      {...props}
-                                    >
-                                      {codeString}
-                                    </SyntaxHighlighter>
-                                    <Copy
-                                      className="absolute top-2 right-2 cursor-pointer"
-                                      onClick={() =>
-                                        navigator.clipboard.writeText(
-                                          codeString,
-                                        )
-                                      }
-                                    />
-                                  </div>
-                                ) : (
-                                  <code className={className} {...props}>
-                                    {children}
-                                  </code>
-                                );
-                              },
-                            }}
-                          >
-                            {m.content}
-                          </Markdown>
-                        </div>
-                      )} */}
                     </>
                   ))
                 )}
