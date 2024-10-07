@@ -154,63 +154,64 @@ export default function ConnectedRepository({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Connected GitHub Repository</CardTitle>
-      </CardHeader>
+    <Card className="w-[400px]">
+      <CardHeader>{/* ui breaks without this */}</CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                disabled={isLoadingRepos}
-                aria-expanded={open}
-                className="w-full justify-between"
-              >
-                {selectedRepo ? selectedRepo.full_name : 'Select a repository'}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[400px] p-0" side="bottom">
-              <Command>
-                <CommandInput placeholder="Search repository..." />
-                <CommandList className="max-h-[200px] overflow-y-auto">
-                  <CommandEmpty>No repository found.</CommandEmpty>
-                  <CommandGroup>
-                    {isLoadingRepos ? (
-                      <CommandItem>Loading repositories...</CommandItem>
-                    ) : errorRepos ? (
-                      <CommandItem>
-                        Error loading repositories. Please try again.
-                      </CommandItem>
-                    ) : githubRepos && githubRepos.length > 0 ? (
-                      githubRepos.map((repo) => (
-                        <CommandItem
-                          key={repo.id}
-                          onSelect={() => handleRepoSelect(repo)}
-                        >
-                          <Check
-                            className={cn(
-                              'mr-2 h-4 w-4',
-                              selectedRepo?.full_name === repo.full_name
-                                ? 'opacity-100'
-                                : 'opacity-0',
-                            )}
-                          />
-                          {repo.full_name}
+          {!selectedRepo ? (
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  disabled={isLoadingRepos}
+                  aria-expanded={open}
+                  className="w-full"
+                >
+                  {selectedRepo
+                    ? selectedRepo.full_name
+                    : 'Select a repository'}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[400px] p-0" side="bottom">
+                <Command>
+                  <CommandInput placeholder="Search repository..." />
+                  <CommandList className="max-h-[200px] overflow-y-auto">
+                    <CommandEmpty>No repository found.</CommandEmpty>
+                    <CommandGroup>
+                      {isLoadingRepos ? (
+                        <CommandItem>Loading repositories...</CommandItem>
+                      ) : errorRepos ? (
+                        <CommandItem>
+                          Error loading repositories. Please try again.
                         </CommandItem>
-                      ))
-                    ) : (
-                      <CommandItem>No repositories found.</CommandItem>
-                    )}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          {selectedRepo && (
+                      ) : githubRepos && githubRepos.length > 0 ? (
+                        githubRepos.map((repo) => (
+                          <CommandItem
+                            key={repo.id}
+                            onSelect={() => handleRepoSelect(repo)}
+                          >
+                            <Check
+                              className={cn(
+                                'mr-2 h-4 w-4',
+                                selectedRepo?.full_name === repo.full_name
+                                  ? 'opacity-100'
+                                  : 'opacity-0',
+                              )}
+                            />
+                            {repo.full_name}
+                          </CommandItem>
+                        ))
+                      ) : (
+                        <CommandItem>No repositories found.</CommandItem>
+                      )}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          ) : (
             <>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -240,13 +241,6 @@ export default function ConnectedRepository({
                     </p>
                   </div>
                 </div>
-                <Link
-                  href={`https://github.com/${selectedRepo.full_name}`}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  <Button variant="outline">View Repository</Button>
-                </Link>
               </div>
               <Separator className="my-4" />
               <div className="space-y-2">
@@ -262,6 +256,15 @@ export default function ConnectedRepository({
                   <span className="font-semibold">Pull requests:</span>{' '}
                   {pullRequests}
                 </p>
+                <Link
+                  href={`https://github.com/${selectedRepo.full_name}`}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <Button className="w-full mt-4" variant="outline">
+                    View Repository
+                  </Button>
+                </Link>
               </div>
             </>
           )}
