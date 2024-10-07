@@ -20,6 +20,8 @@ import {createClient} from '@/lib/supabase/client';
 import {api} from '@/app/_trpc/client';
 
 import ConnectedRepository from './ConnectedRepository';
+import {useMediaQuery} from 'react-responsive';
+import {cn} from '@/lib/utils';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -48,6 +50,7 @@ export default function Project({
   const supabase = createClient();
 
   const {data: tasks} = api.task.getAll.useQuery({projectId: project.id});
+  const isMobile = useMediaQuery({maxWidth: 1240});
 
   useEffect(() => {
     if (tasks) {
@@ -232,157 +235,164 @@ export default function Project({
   ];
 
   return (
-    <div className="h-full p-6">
-      <div className="space-y-6">
-        <Card className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Avatar className="w-16 h-16">
-              <AvatarImage
-                src="/placeholder.svg?height=64&width=64"
-                alt="Project Icon"
-              />
-              <AvatarFallback>PI</AvatarFallback>
-            </Avatar>
-            <div>
-              {isEditing ? (
-                <Input
-                  value={project.name}
-                  onChange={(e) =>
-                    setProject({...project, name: e.target.value})
-                  }
-                  className="text-3xl font-bold text-primary"
+    <div
+      className={cn(
+        'overflow-y-auto scrollbar-hide',
+        isMobile ? 'w-full' : 'w-1/2',
+      )}
+    >
+      <div className="h-full p-6">
+        <div className="space-y-6">
+          <Card className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Avatar className="w-16 h-16">
+                <AvatarImage
+                  src="/placeholder.svg?height=64&width=64"
+                  alt="Project Icon"
                 />
-              ) : (
-                <h1 className="text-3xl font-bold text-primary">
-                  {project.name}
-                </h1>
-              )}
-              {isEditing ? (
-                <Input
-                  value={project.description || ''}
-                  onChange={(e) =>
-                    setProject({...project, description: e.target.value})
-                  }
-                  className="text-muted-foreground"
-                />
-              ) : (
-                <p className="text-muted-foreground">{project.description}</p>
-              )}
+                <AvatarFallback>PI</AvatarFallback>
+              </Avatar>
+              <div>
+                {isEditing ? (
+                  <Input
+                    value={project.name}
+                    onChange={(e) =>
+                      setProject({...project, name: e.target.value})
+                    }
+                    className="text-3xl font-bold text-primary"
+                  />
+                ) : (
+                  <h1 className="text-3xl font-bold text-primary">
+                    {project.name}
+                  </h1>
+                )}
+                {isEditing ? (
+                  <Input
+                    value={project.description || ''}
+                    onChange={(e) =>
+                      setProject({...project, description: e.target.value})
+                    }
+                    className="text-muted-foreground"
+                  />
+                ) : (
+                  <p className="text-muted-foreground">{project.description}</p>
+                )}
+              </div>
             </div>
-          </div>
-          {isEditing ? (
-            <Button variant="ghost" onClick={handleSave}>
-              <Save className="w-4 h-4 mr-2" />
-              Save
-            </Button>
-          ) : (
-            <Button variant="ghost" onClick={() => setIsEditing(true)}>
-              <Pencil className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
-          )}
-        </Card>
+            {isEditing ? (
+              <Button variant="ghost" onClick={handleSave}>
+                <Save className="w-4 h-4 mr-2" />
+                Save
+              </Button>
+            ) : (
+              <Button variant="ghost" onClick={() => setIsEditing(true)}>
+                <Pencil className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+            )}
+          </Card>
 
-        {error && <div className="text-red-500">{error}</div>}
+          {error && <div className="text-red-500">{error}</div>}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Tech Stack</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {combinedTags.map((tech, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className={`${tech.color} text-white`}
-                >
-                  {tech.name}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        <ConnectedRepository
-          projectId={project.id}
-          providerToken={providerToken}
-          onSelect={() => {}}
-        />
-        <Card>
-          <CardHeader>
-            <CardTitle>Kanban Board</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="w-full h-[400px]">
-              <DragDropContext onDragEnd={onDragEnd}>
-                <div className="flex space-x-4 pb-4">
-                  {kanbanColumns.map((column, columnIndex) => (
-                    <div key={columnIndex} className="flex-shrink-0 w-72">
-                      <h3 className="font-semibold mb-2">{column.title}</h3>
-                      <Droppable droppableId={columnIndex.toString()}>
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                            className="bg-secondary/10 rounded-lg p-2 space-y-2 min-h-[200px]"
-                          >
-                            {column.cards.map((task, index) => (
-                              <Draggable
-                                key={task.id}
-                                draggableId={task.id.toString()}
-                                index={index}
-                              >
-                                {(provided, snapshot) => (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                  >
-                                    <motion.div
-                                      initial={{opacity: 0, y: 20}}
-                                      animate={{opacity: 1, y: 0}}
-                                      exit={{opacity: 0, y: -20}}
-                                      transition={{duration: 0.2}}
-                                      style={{
-                                        transform: snapshot.isDragging
-                                          ? 'rotate(3deg)'
-                                          : 'rotate(0)',
-                                        boxShadow: snapshot.isDragging
-                                          ? '0 5px 10px rgba(0,0,0,0.1)'
-                                          : 'none',
-                                      }}
-                                    >
-                                      <Card>
-                                        <CardContent className="p-2">
-                                          <p className="text-sm">
-                                            {task.title}
-                                          </p>
-                                        </CardContent>
-                                      </Card>
-                                    </motion.div>
-                                  </div>
-                                )}
-                              </Draggable>
-                            ))}
-                            {provided.placeholder}
-                            <Button
-                              variant="ghost"
-                              className="w-full justify-start text-muted-foreground"
-                              onClick={() => handleAddCard(columnIndex)}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tech Stack</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {combinedTags.map((tech, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className={`${tech.color} text-white`}
+                  >
+                    {tech.name}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <ConnectedRepository
+            projectId={project.id}
+            providerToken={providerToken}
+            onSelect={() => {}}
+          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Kanban Board</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="w-full h-[400px]">
+                <DragDropContext onDragEnd={onDragEnd}>
+                  <div className="flex space-x-4 pb-4">
+                    {kanbanColumns.map((column, columnIndex) => (
+                      <div key={columnIndex} className="flex-shrink-0 w-72">
+                        <h3 className="font-semibold mb-2">{column.title}</h3>
+                        <Droppable droppableId={columnIndex.toString()}>
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.droppableProps}
+                              className="bg-secondary/10 rounded-lg p-2 space-y-2 min-h-[200px]"
                             >
-                              <Plus className="w-4 h-4 mr-2" />
-                              Add a card
-                            </Button>
-                          </div>
-                        )}
-                      </Droppable>
-                    </div>
-                  ))}
-                </div>
-              </DragDropContext>
-            </ScrollArea>
-          </CardContent>
-        </Card>
+                              {column.cards.map((task, index) => (
+                                <Draggable
+                                  key={task.id}
+                                  draggableId={task.id.toString()}
+                                  index={index}
+                                >
+                                  {(provided, snapshot) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                    >
+                                      <motion.div
+                                        initial={{opacity: 0, y: 20}}
+                                        animate={{opacity: 1, y: 0}}
+                                        exit={{opacity: 0, y: -20}}
+                                        transition={{duration: 0.2}}
+                                        style={{
+                                          transform: snapshot.isDragging
+                                            ? 'rotate(3deg)'
+                                            : 'rotate(0)',
+                                          boxShadow: snapshot.isDragging
+                                            ? '0 5px 10px rgba(0,0,0,0.1)'
+                                            : 'none',
+                                        }}
+                                      >
+                                        <Card>
+                                          <CardContent className="p-2">
+                                            <p className="text-sm">
+                                              {task.title}
+                                            </p>
+                                          </CardContent>
+                                        </Card>
+                                      </motion.div>
+                                    </div>
+                                  )}
+                                </Draggable>
+                              ))}
+                              {provided.placeholder}
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-start text-muted-foreground"
+                                onClick={() => handleAddCard(columnIndex)}
+                              >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add a card
+                              </Button>
+                            </div>
+                          )}
+                        </Droppable>
+                      </div>
+                    ))}
+                  </div>
+                </DragDropContext>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

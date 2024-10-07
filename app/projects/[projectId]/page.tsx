@@ -26,9 +26,7 @@ export default async function ProjectPage({
 
   return (
     <div className="flex h-full">
-      <div className="w-1/2 overflow-y-auto scrollbar-hide">
-        <Project project={project} providerToken={providerToken} />
-      </div>
+      <Project project={project} providerToken={providerToken} />
     </div>
   );
 }

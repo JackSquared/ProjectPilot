@@ -31,6 +31,7 @@ import {
 import {ToolInvocation} from 'ai';
 import {usePathname, useRouter} from 'next/navigation';
 import ConnectedRepository from './ConnectedRepository';
+import {useMediaQuery} from 'react-responsive';
 
 interface ScrollableElement extends Element {
   scrollTimeout?: number;
@@ -48,6 +49,8 @@ export default function Chat({providerToken}: CombinedChatProps) {
   );
   const [isNavigating, setIsNavigating] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(true);
+
+  const isMobile = useMediaQuery({maxWidth: 1240});
 
   const pathname = usePathname();
   const router = useRouter();
@@ -99,12 +102,12 @@ export default function Chat({providerToken}: CombinedChatProps) {
 
   useEffect(() => {
     if (isProjectPage) {
-      setChatState('expanded');
+      setChatState(isMobile ? 'minimized' : 'expanded');
       setIsChatVisible(true);
     } else {
       setChatState('minimized');
     }
-  }, [pathname, isNavigating, isProjectPage]);
+  }, [pathname, isNavigating, isProjectPage, isMobile]);
 
   const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const scrollElement = event.target as HTMLDivElement;
@@ -125,12 +128,14 @@ export default function Chat({providerToken}: CombinedChatProps) {
   };
 
   const expandChat = () => {
-    setChatState('expanded');
+    if (!isMobile) {
+      setChatState('expanded');
+    }
   };
 
   const minimizeChat = () => {
     setChatState('minimized');
-    if (isProjectPage) {
+    if (isProjectPage && !isMobile) {
       router.push('/');
     }
   };
@@ -146,7 +151,7 @@ export default function Chat({providerToken}: CombinedChatProps) {
 
   const variants = {
     minimized: {
-      width: '25vw',
+      width: isMobile ? '100%' : '25vw',
       height: '50vh',
       opacity: 1,
       scale: 1,
@@ -176,10 +181,18 @@ export default function Chat({providerToken}: CombinedChatProps) {
           }
           exit={{opacity: 0, scale: 0.8, x: '100%', y: '100%'}}
           transition={{type: 'spring', stiffness: 300, damping: 30}}
-          className="fixed bottom-4 right-4 bg-zinc-900 rounded-lg shadow-lg overflow-hidden flex border-2 border-primary/20"
+          className="fixed bottom-0 right-0 md:bottom-4 md:right-4 bg-zinc-900 rounded-lg shadow-lg overflow-hidden flex border-2 border-primary/20"
           style={{
-            maxWidth: chatState === 'expanded' ? 'calc(100vw - 2rem)' : '50rem',
-            minWidth: chatState === 'minimized' ? '30rem' : 'auto',
+            maxWidth: isMobile
+              ? '100%'
+              : chatState === 'expanded'
+              ? 'calc(100vw - 2rem)'
+              : '50rem',
+            minWidth: isMobile
+              ? 'auto'
+              : chatState === 'minimized'
+              ? '30rem'
+              : 'auto',
             transformOrigin: 'bottom right',
           }}
         >
