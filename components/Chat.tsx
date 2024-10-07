@@ -181,7 +181,7 @@ export default function Chat({providerToken}: CombinedChatProps) {
             exit={{opacity: 0, scale: 0.8, x: '100%', y: '100%'}}
             transition={{type: 'spring', stiffness: 300, damping: 30}}
             className={cn(
-              'fixed bottom-0 bg-zinc-900 rounded-lg shadow-lg overflow-hidden flex border-2 border-primary/20',
+              'fixed bottom-0 bg-zinc-900 rounded-lg shadow-lg overflow-hidden flex border-2 border-primary/10',
               isMobile
                 ? 'left-1/2 w-[98%]'
                 : chatState === 'expanded'

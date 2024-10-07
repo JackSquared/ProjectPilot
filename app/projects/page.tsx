@@ -15,5 +15,9 @@ export default async function Projects() {
     return <div>No projects</div>;
   }
 
-  return <ProjectList serverProjects={data} />;
+  return (
+    <div className="p-4">
+      <ProjectList serverProjects={data} />
+    </div>
+  );
 }
