@@ -153,7 +153,7 @@ export default function ConnectedRepository({
   };
 
   return (
-    <Card className="w-[400px]">
+    <Card>
       <CardHeader>{/* ui breaks without this */}</CardHeader>
       <CardContent>
         <div className="space-y-4">

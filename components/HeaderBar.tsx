@@ -8,7 +8,7 @@ import {Session} from '@supabase/supabase-js';
 
 export function HeaderBar({session}: {session: Session | null}) {
   return (
-    <header className="flex items-center p-2 border-b border-primary/20">
+    <div className="flex p-2 mb-2 border-b border-primary/20">
       {session && (
         <Link href="/" passHref>
           <Button variant="outline" className="ml-4">
@@ -25,6 +25,6 @@ export function HeaderBar({session}: {session: Session | null}) {
           </Button>
         </Link>
       )}
-    </header>
+    </div>
   );
 }
