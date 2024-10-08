@@ -7,15 +7,26 @@ import {
   tryAddTask,
   tryUpdateProjectTags,
 } from '@/lib/projects/queries';
+import {Octokit} from 'octokit';
 
 export const maxDuration = 30;
 export const runtime = 'edge';
+
+const getRepoLanguages = async (owner: string, repo: string, token: string) => {
+  const octokit = new Octokit({auth: token});
+  const response = await octokit.rest.repos.listLanguages({owner, repo});
+  console.log(response.data);
+  return response.data;
+};
 
 export async function POST(
   req: Request,
   {params}: {params: {projectId: string}},
 ) {
   const supabase = createClient();
+  const {
+    data: {session},
+  } = await supabase.auth.getSession();
 
   async function updateProjectTags(
     projectId: number,
@@ -120,6 +131,22 @@ export async function POST(
             .string()
             .describe('The message to ask to connect a GitHub repository'),
         }),
+      },
+      getRepoLanguages: {
+        description:
+          'Get the programming languages of a GitHub repository. You should call this after you connect a new github repository. Update the tech stack of the project with the results.',
+        parameters: z.object({
+          owner: z.string().describe('The owner of the GitHub repository'),
+          repo: z.string().describe('The name of the GitHub repository'),
+        }),
+        execute: async ({owner, repo}: {owner: string; repo: string}) => {
+          const languages = await getRepoLanguages(
+            owner,
+            repo,
+            session?.provider_token || '',
+          );
+          return languages;
+        },
       },
       updateProject: {
         description: 'Update a project.',
