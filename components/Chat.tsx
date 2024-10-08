@@ -68,6 +68,7 @@ export default function Chat({providerToken}: CombinedChatProps) {
     stop,
     reload,
     addToolResult,
+    setInput,
   } = useChat({
     api: isProjectPage && projectId ? `/api/chat/${projectId}` : '/api/chat',
     maxSteps: 3,
@@ -143,6 +144,15 @@ export default function Chat({providerToken}: CombinedChatProps) {
     if (isChatVisible) {
       setChatState('minimized');
     }
+  };
+
+  const promptPillText = isProjectPage
+    ? 'Help me come up with a plan and help me define some tasks to work on.'
+    : 'Shazam for vinyl covers. Take a photo of a cover and have it added to your discogs list.';
+
+  const handlePromptPillClick = () => {
+    setInput(promptPillText);
+    handleSubmit(new Event('submit'));
   };
 
   const filteredMessages = messages.filter((m) => m.role !== 'system');
@@ -248,10 +258,19 @@ export default function Chat({providerToken}: CombinedChatProps) {
                   ref={scrollRef}
                 >
                   {filteredMessages.length === 0 ? (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <p className="text-xl text-muted-foreground">
-                        What do you want to work on?
-                      </p>
+                    <div className="absolute inset-0 flex flex-col items-center justify-between p-6">
+                      <div className="flex-grow flex items-center justify-center">
+                        <p className="text-xl text-muted-foreground">
+                          What do you want to work on?
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handlePromptPillClick}
+                        variant="secondary"
+                        className="rounded-full px-4 py-2 text-sm mt-4 hover:bg-zinc-700"
+                      >
+                        {promptPillText}
+                      </Button>
                     </div>
                   ) : (
                     filteredMessages.map((m, index) => (
