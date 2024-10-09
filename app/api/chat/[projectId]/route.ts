@@ -8,6 +8,7 @@ import {
   tryUpdateProjectTags,
 } from '@/lib/projects/queries';
 import {Octokit} from 'octokit';
+import {createGitRepo} from '@/lib/cReAte-gIt-RePo';
 
 export const maxDuration = 30;
 export const runtime = 'edge';
@@ -124,6 +125,14 @@ export async function POST(
     messages: convertToCoreMessages(messages),
     system: systemMessage,
     tools: {
+      createGitRepo: {
+        description: 'Create a git repository.',
+        parameters: z.object({}),
+        execute: async () => {
+          await createGitRepo();
+          return 'Repo created successfully!';
+        },
+      },
       connectGitHubRepository: {
         description: 'Connect a GitHub repository to a project.',
         parameters: z.object({
