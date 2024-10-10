@@ -1,3 +1,6 @@
+'use client';
+
+import {useState, useEffect} from 'react';
 import {Card, CardHeader, CardTitle, CardContent} from '@/components/ui/card';
 import {ScrollArea, ScrollBar} from '@/components/ui/scroll-area';
 import {
@@ -10,10 +13,10 @@ import {Plus, ListCollapse} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {motion} from 'framer-motion';
 import {api} from '@/app/_trpc/client';
-import {useState, useEffect} from 'react';
 import {toast} from 'sonner';
 import {Database} from '@/lib/supabase.types';
 import {createClient} from '@/lib/supabase/client';
+import EditTaskModal from './EditTaskModal';
 
 type Task = Database['public']['Tables']['tasks']['Row'] & {
   id: number | string;
@@ -26,8 +29,27 @@ type KanbanColumn = {
 
 const KanbanBoard = ({projectId}: {projectId: number}) => {
   const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([]);
-  const {data: tasks} = api.task.getAll.useQuery({projectId: projectId});
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const {data: tasks, refetch} = api.task.getAll.useQuery({
+    projectId: projectId,
+  });
   const supabase = createClient();
+  const handleTaskSave = async (title: string, description: string) => {
+    if (!selectedTask) return;
+
+    // TODO: use a mutation instead
+    const {error} = await supabase
+      .from('tasks')
+      .update({title, description})
+      .eq('id', selectedTask.id);
+    if (error) {
+      toast.error('Failed to update task.');
+    } else {
+      toast.success('Task updated successfully.');
+    }
+    refetch();
+  };
 
   const handleAddCard = async (columnIndex: number) => {
     const status = ['to do', 'doing', 'done'][columnIndex];
@@ -99,6 +121,13 @@ const KanbanBoard = ({projectId}: {projectId: number}) => {
     }
   };
 
+  const handleTaskClick = (e: React.MouseEvent, task: Task) => {
+    // Prevent click event when dragging
+    if (e.defaultPrevented) return;
+    setSelectedTask(task);
+    setIsEditModalOpen(true);
+  };
+
   useEffect(() => {
     if (tasks) {
       const columns: KanbanColumn[] = [
@@ -115,6 +144,7 @@ const KanbanBoard = ({projectId}: {projectId: number}) => {
       setKanbanColumns(columns);
     }
   }, [tasks]);
+
   return (
     <Card>
       <CardHeader>
@@ -145,6 +175,8 @@ const KanbanBoard = ({projectId}: {projectId: number}) => {
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
+                                onClick={(e) => handleTaskClick(e, task)}
+                                className="group select-none"
                               >
                                 <motion.div
                                   initial={{opacity: 0, y: 20}}
@@ -162,10 +194,14 @@ const KanbanBoard = ({projectId}: {projectId: number}) => {
                                 >
                                   <Card>
                                     <CardContent className="p-2">
-                                      <div className="flex justify-between items-center">
-                                        <p className="text-sm">{task.title}</p>
+                                      <div className="flex items-center">
+                                        <div className="flex-grow cursor-grab active:cursor-grabbing">
+                                          <p className="text-sm truncate">
+                                            {task.title}
+                                          </p>
+                                        </div>
                                         {task.description && (
-                                          <ListCollapse className="w-4 h-4 text-muted-foreground" />
+                                          <ListCollapse className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-2" />
                                         )}
                                       </div>
                                     </CardContent>
@@ -194,6 +230,12 @@ const KanbanBoard = ({projectId}: {projectId: number}) => {
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </CardContent>
+      <EditTaskModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        task={selectedTask}
+        onSave={handleTaskSave}
+      />
     </Card>
   );
 };
