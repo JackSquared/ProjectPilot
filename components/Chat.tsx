@@ -33,6 +33,7 @@ import {usePathname, useRouter} from 'next/navigation';
 import ConnectedRepository from './ConnectedRepository';
 import {useMediaQuery} from 'react-responsive';
 import {cn} from '@/lib/utils';
+import {api} from '@/app/_trpc/client';
 
 interface ScrollableElement extends Element {
   scrollTimeout?: number;
@@ -59,6 +60,10 @@ export default function Chat({providerToken}: CombinedChatProps) {
   const isProjectPage = /^\/projects\/[^/]+$/.test(pathname);
   const projectId = pathname.split('/')[2];
 
+  const {refetch: refetchTasks} = api.task.getAll.useQuery({
+    projectId: parseInt(projectId),
+  });
+
   const {
     messages,
     input,
@@ -81,6 +86,9 @@ export default function Chat({providerToken}: CombinedChatProps) {
           router.push(`/projects/${id}`);
         }, 300);
         return 'Project opened';
+      }
+      if (toolCall.toolName === 'addTask') {
+        refetchTasks();
       }
     },
   });
