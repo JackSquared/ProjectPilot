@@ -14,7 +14,7 @@ import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {Input} from '@/components/ui/input';
-import {Plus, Pencil, Save} from 'lucide-react';
+import {Plus, Pencil, Save, ListCollapse} from 'lucide-react';
 import {createClient} from '@/lib/supabase/client';
 import {api} from '@/app/_trpc/client';
 
@@ -313,9 +313,14 @@ export default function Project({
                                       >
                                         <Card>
                                           <CardContent className="p-2">
-                                            <p className="text-sm">
-                                              {task.title}
-                                            </p>
+                                            <div className="flex justify-between items-center">
+                                              <p className="text-sm">
+                                                {task.title}
+                                              </p>
+                                              {task.description && (
+                                                <ListCollapse className="w-4 h-4 text-muted-foreground" />
+                                              )}
+                                            </div>
                                           </CardContent>
                                         </Card>
                                       </motion.div>
