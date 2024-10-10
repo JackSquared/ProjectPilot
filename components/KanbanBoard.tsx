@@ -1,5 +1,5 @@
 import {Card, CardHeader, CardTitle, CardContent} from '@/components/ui/card';
-import {ScrollArea} from '@/components/ui/scroll-area';
+import {ScrollArea, ScrollBar} from '@/components/ui/scroll-area';
 import {
   DragDropContext,
   Droppable,
@@ -121,7 +121,7 @@ const KanbanBoard = ({projectId}: {projectId: number}) => {
         <CardTitle>Kanban Board</CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="w-full h-[400px]">
+        <ScrollArea className="w-full h-[400px] whitespace-nowrap">
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="flex space-x-4 pb-4">
               {kanbanColumns.map((column, columnIndex) => (
@@ -191,6 +191,7 @@ const KanbanBoard = ({projectId}: {projectId: number}) => {
               ))}
             </div>
           </DragDropContext>
+          <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </CardContent>
     </Card>
